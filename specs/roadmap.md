@@ -17,7 +17,7 @@ Objetivo: preparar a base da solucao.
 - preparar a base arquitetural para o frontend em Blazor, sem implementa-lo ainda
 - estruturar a pasta `docker/`
 - adicionar Dockerfiles da API e do Blazor
-- adicionar `docker-compose.yml` com API, Blazor, MySQL e servico de migration
+- adicionar `docker-compose.yml` com API, Blazor e MySQL
 - definir configuracao inicial por variaveis de ambiente
 - adicionar README inicial com objetivo e instrucoes basicas
 
