@@ -1,29 +1,16 @@
-using GoodHamburguer.Domain.Menu;
-
 namespace GoodHamburguer.Domain.Orders;
 
 public sealed class OrderItemSelection
 {
-    public OrderItemSelection(string name, MenuCategory category, decimal unitPrice)
+    public OrderItemSelection(string itemCode)
     {
-        if (string.IsNullOrWhiteSpace(name))
+        if (string.IsNullOrWhiteSpace(itemCode))
         {
-            throw new ArgumentException("Order item name cannot be empty.", nameof(name));
+            throw new ArgumentException("Order item code cannot be empty.", nameof(itemCode));
         }
 
-        if (unitPrice < 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(unitPrice), "Order item price cannot be negative.");
-        }
-
-        Name = name.Trim();
-        Category = category ?? throw new ArgumentNullException(nameof(category));
-        UnitPrice = unitPrice;
+        ItemCode = itemCode.Trim();
     }
 
-    public string Name { get; }
-
-    public MenuCategory Category { get; }
-
-    public decimal UnitPrice { get; }
+    public string ItemCode { get; }
 }

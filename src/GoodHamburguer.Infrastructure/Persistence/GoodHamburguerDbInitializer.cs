@@ -55,15 +55,15 @@ public sealed class GoodHamburguerDbInitializer : IDatabaseInitializer
     [
         Order.Create(
             Guid.Parse("11111111-1111-1111-1111-111111111111"),
-            sandwich: new OrderItemSelection("X Burger", MenuCategory.Sandwiches, 5.00m),
-            side: new OrderItemSelection("Batata frita", MenuCategory.Sides, 2.00m),
-            drink: new OrderItemSelection("Refrigerante", MenuCategory.Drinks, 2.50m),
+            sandwich: new OrderItemSelection("sandwich-x-burger"),
+            side: new OrderItemSelection("side-fries"),
+            drink: new OrderItemSelection("drink-soft-drink"),
             createdAtUtc: new DateTimeOffset(2026, 4, 21, 9, 0, 0, TimeSpan.Zero)),
         Order.Create(
             Guid.Parse("22222222-2222-2222-2222-222222222222"),
-            sandwich: new OrderItemSelection("X Egg", MenuCategory.Sandwiches, 4.50m),
+            sandwich: new OrderItemSelection("sandwich-x-egg"),
             side: null,
-            drink: new OrderItemSelection("Refrigerante", MenuCategory.Drinks, 2.50m),
+            drink: new OrderItemSelection("drink-soft-drink"),
             createdAtUtc: new DateTimeOffset(2026, 4, 21, 9, 5, 0, TimeSpan.Zero))
     ];
 
@@ -142,12 +142,9 @@ public sealed class GoodHamburguerDbInitializer : IDatabaseInitializer
             Id = order.Id,
             CreatedAtUtc = order.CreatedAtUtc,
             UpdatedAtUtc = order.UpdatedAtUtc,
-            SandwichName = order.Sandwich?.Name,
-            SandwichUnitPrice = order.Sandwich?.UnitPrice,
-            SideName = order.Side?.Name,
-            SideUnitPrice = order.Side?.UnitPrice,
-            DrinkName = order.Drink?.Name,
-            DrinkUnitPrice = order.Drink?.UnitPrice
+            SandwichItemCode = order.Sandwich?.ItemCode,
+            SideItemCode = order.Side?.ItemCode,
+            DrinkItemCode = order.Drink?.ItemCode
         };
     }
 }

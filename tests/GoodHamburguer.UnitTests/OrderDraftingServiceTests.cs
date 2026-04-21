@@ -14,25 +14,16 @@ public class OrderDraftingServiceTests
         var now = new DateTimeOffset(2026, 4, 21, 12, 0, 0, TimeSpan.Zero);
         var request = new CreateOrderRequest
         {
-            Sandwich = new OrderItemInput
-            {
-                Name = "X Egg",
-                UnitPrice = 4.50m
-            },
-            Drink = new OrderItemInput
-            {
-                Name = "Refrigerante",
-                UnitPrice = 2.50m
-            }
+            SandwichItemCode = "sandwich-x-egg",
+            DrinkItemCode = "drink-soft-drink"
         };
 
         var order = service.CreateOrder(orderId, request, now);
 
         order.Id.Should().Be(orderId);
-        order.Sandwich!.Name.Should().Be("X Egg");
-        order.Sandwich.Category.Code.Should().Be("sandwiches");
+        order.Sandwich!.ItemCode.Should().Be("sandwich-x-egg");
         order.Side.Should().BeNull();
-        order.Drink!.Name.Should().Be("Refrigerante");
+        order.Drink!.ItemCode.Should().Be("drink-soft-drink");
     }
 
     [Fact]
@@ -44,11 +35,7 @@ public class OrderDraftingServiceTests
             Guid.NewGuid(),
             new CreateOrderRequest
             {
-                Sandwich = new OrderItemInput
-                {
-                    Name = "X Burger",
-                    UnitPrice = 5.00m
-                }
+                SandwichItemCode = "sandwich-x-burger"
             },
             createdAt);
 
@@ -56,22 +43,14 @@ public class OrderDraftingServiceTests
             order,
             new UpdateOrderRequest
             {
-                Side = new OrderItemInput
-                {
-                    Name = "Batata frita",
-                    UnitPrice = 2.00m
-                },
-                Drink = new OrderItemInput
-                {
-                    Name = "Refrigerante",
-                    UnitPrice = 2.50m
-                }
+                SideItemCode = "side-fries",
+                DrinkItemCode = "drink-soft-drink"
             },
             createdAt.AddMinutes(30));
 
         order.Sandwich.Should().BeNull();
-        order.Side!.Category.Code.Should().Be("sides");
-        order.Drink!.Category.Code.Should().Be("drinks");
+        order.Side!.ItemCode.Should().Be("side-fries");
+        order.Drink!.ItemCode.Should().Be("drink-soft-drink");
         order.UpdatedAtUtc.Should().Be(createdAt.AddMinutes(30));
     }
 }

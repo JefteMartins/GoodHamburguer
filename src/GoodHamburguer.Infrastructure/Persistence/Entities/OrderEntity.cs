@@ -8,15 +8,9 @@ public sealed class OrderEntity
 
     public DateTimeOffset UpdatedAtUtc { get; set; }
 
-    public string? SandwichName { get; set; }
+    public string? SandwichItemCode { get; set; }
 
-    public decimal? SandwichUnitPrice { get; set; }
+    public string? SideItemCode { get; set; }
 
-    public string? SideName { get; set; }
-
-    public decimal? SideUnitPrice { get; set; }
-
-    public string? DrinkName { get; set; }
-
-    public decimal? DrinkUnitPrice { get; set; }
+    public string? DrinkItemCode { get; set; }
 }

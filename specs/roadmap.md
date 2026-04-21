@@ -51,7 +51,7 @@ Objetivo: introduzir a persistencia real logo apos a consolidacao do dominio.
 - implementar servico de migration e seed para uso no Docker
 - garantir seed inicial com cardapio e alguns pedidos de exemplo
 
-## Fase 5 - Regras de Validacao
+## Fase 5 - Regras de Validacao [Concluida]
 
 Objetivo: impedir entradas invalidas logo no inicio.
 

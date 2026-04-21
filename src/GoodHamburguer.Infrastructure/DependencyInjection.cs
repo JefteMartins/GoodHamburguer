@@ -48,7 +48,7 @@ public static class DependencyInjection
         });
 
         services.AddScoped<IMenuQueryService, PersistedMenuQueryService>();
-        services.AddScoped<IOrderRepository, MySqlOrderRepository>();
+        services.AddScoped<IOrderRepository, OrderRepository>();
         services.AddScoped<IDatabaseInitializer, GoodHamburguerDbInitializer>();
 
         return services;

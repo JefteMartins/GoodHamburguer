@@ -21,6 +21,7 @@ public sealed class PersistedMenuQueryService : IMenuQueryService
             .OrderBy(menuItem => menuItem.CategoryCode)
             .ThenBy(menuItem => menuItem.Name)
             .Select(menuItem => new MenuItem(
+                menuItem.Code,
                 menuItem.Name,
                 new MenuCategory(menuItem.CategoryCode, menuItem.CategoryDisplayName),
                 menuItem.Price))
