@@ -19,6 +19,11 @@ Todas as mudancas relevantes deste projeto serao registradas aqui.
 - consulta de cardapio via abstracao preparada para persistencia futura
 - endpoint `GET /api/v1/menu` com resposta agrupada por categoria
 - testes unitarios e de integracao para a consulta do cardapio
+- especificacao da feature da Fase 3 em `specs/2026-04-21-phase-3-order-modeling/`
+- agregado `Order` com slots explicitos para `sandwich`, `side` e `drink`
+- contratos iniciais de criacao e atualizacao de pedido na camada de aplicacao
+- servico de modelagem para transformar contratos em entidade de dominio
+- testes unitarios da modelagem de pedido e dos contratos de aplicacao
 
 ## [2026-04-20]
 
