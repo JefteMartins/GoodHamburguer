@@ -1,0 +1,9 @@
+.git
+.gitignore
+.dotnet
+.nuget
+**/bin
+**/obj
+**/.vs
+**/*.user
+**/*.suo
