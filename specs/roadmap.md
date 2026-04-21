@@ -30,7 +30,7 @@ Objetivo: representar o cardapio e os tipos de item.
 - criar servico ou fonte de dados para consulta do cardapio
 - adicionar testes unitarios iniciais do dominio do cardapio
 
-## Fase 3 - Modelagem de Pedido
+## Fase 3 - Modelagem de Pedido [Concluida]
 
 Objetivo: criar a representacao correta do pedido.
 
@@ -40,7 +40,7 @@ Objetivo: criar a representacao correta do pedido.
 - incluir identificador e datas basicas, se fizer sentido
 - adicionar testes unitarios iniciais da modelagem de pedido
 
-## Fase 4 - Persistencia MySQL
+## Fase 4 - Persistencia MySQL [Concluida]
 
 Objetivo: introduzir a persistencia real logo apos a consolidacao do dominio.
 

@@ -50,6 +50,7 @@ CodeCoverage/
 .nuget/
 .env
 .env.*
+!.env.example
 appsettings.Local.json
 appsettings.*.Local.json
 
