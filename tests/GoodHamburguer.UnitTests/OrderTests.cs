@@ -1,5 +1,4 @@
 using FluentAssertions;
-using GoodHamburguer.Domain.Menu;
 using GoodHamburguer.Domain.Orders;
 
 namespace GoodHamburguer.UnitTests;
@@ -14,17 +13,17 @@ public class OrderTests
 
         var order = Order.Create(
             orderId,
-            sandwich: new OrderItemSelection("X Burger", MenuCategory.Sandwiches, 5.00m),
-            side: new OrderItemSelection("Batata frita", MenuCategory.Sides, 2.00m),
-            drink: new OrderItemSelection("Refrigerante", MenuCategory.Drinks, 2.50m),
+            sandwich: new OrderItemSelection("sandwich-x-burger"),
+            side: new OrderItemSelection("side-fries"),
+            drink: new OrderItemSelection("drink-soft-drink"),
             createdAtUtc: now);
 
         order.Id.Should().Be(orderId);
         order.CreatedAtUtc.Should().Be(now);
         order.UpdatedAtUtc.Should().Be(now);
-        order.Sandwich!.Name.Should().Be("X Burger");
-        order.Side!.Name.Should().Be("Batata frita");
-        order.Drink!.Name.Should().Be("Refrigerante");
+        order.Sandwich!.ItemCode.Should().Be("sandwich-x-burger");
+        order.Side!.ItemCode.Should().Be("side-fries");
+        order.Drink!.ItemCode.Should().Be("drink-soft-drink");
     }
 
     [Fact]
@@ -34,35 +33,35 @@ public class OrderTests
         var updatedAt = createdAt.AddMinutes(10);
         var order = Order.Create(
             Guid.NewGuid(),
-            sandwich: new OrderItemSelection("X Burger", MenuCategory.Sandwiches, 5.00m),
+            sandwich: new OrderItemSelection("sandwich-x-burger"),
             side: null,
             drink: null,
             createdAtUtc: createdAt);
 
         order.UpdateItems(
-            sandwich: new OrderItemSelection("X Bacon", MenuCategory.Sandwiches, 7.00m),
-            side: new OrderItemSelection("Batata frita", MenuCategory.Sides, 2.00m),
+            sandwich: new OrderItemSelection("sandwich-x-bacon"),
+            side: new OrderItemSelection("side-fries"),
             drink: null,
             updatedAtUtc: updatedAt);
 
-        order.Sandwich!.Name.Should().Be("X Bacon");
-        order.Side!.Name.Should().Be("Batata frita");
+        order.Sandwich!.ItemCode.Should().Be("sandwich-x-bacon");
+        order.Side!.ItemCode.Should().Be("side-fries");
         order.Drink.Should().BeNull();
         order.UpdatedAtUtc.Should().Be(updatedAt);
     }
 
     [Fact]
-    public void Create_ShouldRejectSelectionAssignedToTheWrongSlot()
+    public void Create_ShouldAllowNullSlotsWithoutBreakingStructuralShape()
     {
-        var act = () => Order.Create(
+        var order = Order.Create(
             Guid.NewGuid(),
-            sandwich: new OrderItemSelection("Refrigerante", MenuCategory.Drinks, 2.50m),
-            side: null,
+            sandwich: null,
+            side: new OrderItemSelection("side-fries"),
             drink: null,
             createdAtUtc: DateTimeOffset.UtcNow);
 
-        act.Should()
-            .Throw<ArgumentException>()
-            .WithMessage("*sandwich*");
+        order.Sandwich.Should().BeNull();
+        order.Side!.ItemCode.Should().Be("side-fries");
+        order.Drink.Should().BeNull();
     }
 }

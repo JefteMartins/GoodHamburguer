@@ -1,6 +1,5 @@
 using FluentAssertions;
 using GoodHamburguer.Application.Orders.Abstractions;
-using GoodHamburguer.Domain.Menu;
 using GoodHamburguer.Domain.Orders;
 using GoodHamburguer.IntegrationTests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,8 +20,8 @@ public sealed class OrderRepositoryTests : IClassFixture<MySqlWebApplicationFact
     {
         var order = Order.Create(
             Guid.NewGuid(),
-            sandwich: new OrderItemSelection("X Burger", MenuCategory.Sandwiches, 5.00m),
-            side: new OrderItemSelection("Batata frita", MenuCategory.Sides, 2.00m),
+            sandwich: new OrderItemSelection("sandwich-x-burger"),
+            side: new OrderItemSelection("side-fries"),
             drink: null,
             createdAtUtc: new DateTimeOffset(2026, 4, 21, 18, 0, 0, TimeSpan.Zero));
 
@@ -36,8 +35,8 @@ public sealed class OrderRepositoryTests : IClassFixture<MySqlWebApplicationFact
         var persistedOrder = await reloadedRepository.GetByIdAsync(order.Id);
 
         persistedOrder.Should().NotBeNull();
-        persistedOrder!.Sandwich!.Name.Should().Be("X Burger");
-        persistedOrder.Side!.Name.Should().Be("Batata frita");
+        persistedOrder!.Sandwich!.ItemCode.Should().Be("sandwich-x-burger");
+        persistedOrder.Side!.ItemCode.Should().Be("side-fries");
         persistedOrder.Drink.Should().BeNull();
         persistedOrder.CreatedAtUtc.Should().Be(order.CreatedAtUtc);
     }

@@ -1,5 +1,3 @@
-using GoodHamburguer.Domain.Menu;
-
 namespace GoodHamburguer.Domain.Orders;
 
 public sealed class Order
@@ -55,27 +53,8 @@ public sealed class Order
         OrderItemSelection? side,
         OrderItemSelection? drink)
     {
-        ValidateSlot(sandwich, MenuCategory.Sandwiches, nameof(sandwich));
-        ValidateSlot(side, MenuCategory.Sides, nameof(side));
-        ValidateSlot(drink, MenuCategory.Drinks, nameof(drink));
-
         Sandwich = sandwich;
         Side = side;
         Drink = drink;
-    }
-
-    private static void ValidateSlot(OrderItemSelection? item, MenuCategory expectedCategory, string slotName)
-    {
-        if (item is null)
-        {
-            return;
-        }
-
-        if (!item.Category.Equals(expectedCategory))
-        {
-            throw new ArgumentException(
-                $"The item assigned to {slotName} must belong to category '{expectedCategory.Code}'.",
-                slotName);
-        }
     }
 }

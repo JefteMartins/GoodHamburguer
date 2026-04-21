@@ -18,22 +18,31 @@ internal sealed class OrderEntityTypeConfiguration : IEntityTypeConfiguration<Or
         builder.Property(order => order.UpdatedAtUtc)
             .HasColumnType("datetime(6)");
 
-        builder.Property(order => order.SandwichName)
-            .HasMaxLength(120);
+        builder.Property(order => order.SandwichItemCode)
+            .HasMaxLength(64);
 
-        builder.Property(order => order.SandwichUnitPrice)
-            .HasPrecision(10, 2);
+        builder.Property(order => order.SideItemCode)
+            .HasMaxLength(64);
 
-        builder.Property(order => order.SideName)
-            .HasMaxLength(120);
+        builder.Property(order => order.DrinkItemCode)
+            .HasMaxLength(64);
 
-        builder.Property(order => order.SideUnitPrice)
-            .HasPrecision(10, 2);
+        builder.HasOne<MenuItemEntity>()
+            .WithMany()
+            .HasForeignKey(order => order.SandwichItemCode)
+            .HasPrincipalKey(menuItem => menuItem.Code)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(order => order.DrinkName)
-            .HasMaxLength(120);
+        builder.HasOne<MenuItemEntity>()
+            .WithMany()
+            .HasForeignKey(order => order.SideItemCode)
+            .HasPrincipalKey(menuItem => menuItem.Code)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        builder.Property(order => order.DrinkUnitPrice)
-            .HasPrecision(10, 2);
+        builder.HasOne<MenuItemEntity>()
+            .WithMany()
+            .HasForeignKey(order => order.DrinkItemCode)
+            .HasPrincipalKey(menuItem => menuItem.Code)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
