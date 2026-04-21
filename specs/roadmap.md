@@ -40,7 +40,7 @@ Objetivo: criar a representacao correta do pedido.
 - incluir identificador e datas basicas, se fizer sentido
 - adicionar testes unitarios iniciais da modelagem de pedido
 
-## Fase 4 - Persistencia MySQL
+## Fase 4 - Persistencia MySQL [Concluida]
 
 Objetivo: introduzir a persistencia real logo apos a consolidacao do dominio.
 

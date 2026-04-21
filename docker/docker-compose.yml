@@ -1,4 +1,18 @@
 services:
+  migrations:
+    build:
+      context: ..
+      dockerfile: docker/api/Dockerfile
+    command: ["--migrate-only"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Server=mysql;Port=3306;Database=goodhamburguer;User=root;Password=root
+      Database__RunMigrationsOnly: "true"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: "no"
+
   api:
     build:
       context: ..
@@ -10,8 +24,8 @@ services:
     ports:
       - "8081:8080"
     depends_on:
-      mysql:
-        condition: service_healthy
+      migrations:
+        condition: service_completed_successfully
 
   blazor:
     build:

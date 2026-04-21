@@ -3,6 +3,7 @@ using Asp.Versioning.ApiExplorer;
 using GoodHamburguer.Api.Swagger;
 using GoodHamburguer.Application;
 using GoodHamburguer.Infrastructure;
+using GoodHamburguer.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -11,7 +12,7 @@ namespace GoodHamburguer.Api;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,15 @@ public class Program
 
         var app = builder.Build();
 
+        if (builder.Configuration.GetValue<bool>("Database:RunMigrationsOnly")
+            || args.Contains("--migrate-only", StringComparer.OrdinalIgnoreCase))
+        {
+            await using var migrationScope = app.Services.CreateAsyncScope();
+            var initializer = migrationScope.ServiceProvider.GetRequiredService<IDatabaseInitializer>();
+            await initializer.InitializeAsync();
+            return;
+        }
+
         app.UseExceptionHandler();
 
         app.UseSwagger();
@@ -63,6 +73,6 @@ public class Program
 
         app.UseAuthorization();
         app.MapControllers();
-        app.Run();
+        await app.RunAsync();
     }
 }

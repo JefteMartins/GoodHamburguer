@@ -1,17 +1,17 @@
 using FluentAssertions;
-using Microsoft.AspNetCore.Mvc.Testing;
+using GoodHamburguer.IntegrationTests.Infrastructure;
 using System.Net;
 using System.Net.Http.Json;
 
 namespace GoodHamburguer.IntegrationTests;
 
-public class MenuEndpointTests : IClassFixture<WebApplicationFactory<GoodHamburguer.Api.Program>>
+public class MenuEndpointTests : IClassFixture<MySqlWebApplicationFactory>
 {
     private readonly HttpClient _client;
 
-    public MenuEndpointTests(WebApplicationFactory<GoodHamburguer.Api.Program> factory)
+    public MenuEndpointTests(MySqlWebApplicationFactory factory)
     {
-        _client = factory.CreateClient();
+        _client = factory.CreateApiClient();
     }
 
     [Fact]
