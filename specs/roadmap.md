@@ -30,7 +30,7 @@ Objetivo: representar o cardapio e os tipos de item.
 - criar servico ou fonte de dados para consulta do cardapio
 - adicionar testes unitarios iniciais do dominio do cardapio
 
-## Fase 3 - Modelagem de Pedido
+## Fase 3 - Modelagem de Pedido [Concluida]
 
 Objetivo: criar a representacao correta do pedido.
 
