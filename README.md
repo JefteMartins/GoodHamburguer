@@ -10,10 +10,10 @@ O objetivo deste repositorio e entregar uma solucao completa em .NET para regist
 - versionamento `v1`
 - Swagger versionado
 - frontend em Blazor Web App
-- persistencia planejada em MySQL
+- persistencia real em MySQL
 - containerizacao com Docker
 
-Esta branch implementa a fundacao do projeto, deixando a solution preparada para a evolucao das proximas fases do roadmap.
+Nesta etapa, o projeto ja persiste catalogo e pedidos em MySQL, com migration inicial, seed idempotente e servico dedicado de migracao no ambiente Docker.
 
 ## Arquitetura
 
@@ -52,7 +52,7 @@ O projeto segue uma base de Clean Architecture com DDD pragmatico, organizada em
 
 ## Como Rodar com Docker
 
-Esta fase deixa a estrutura Docker pronta para evolucao. O ambiente base previsto e:
+O ambiente local previsto e:
 
 - `blazor` em `http://localhost:8080`
 - `api` em `http://localhost:8081`
@@ -66,30 +66,29 @@ docker compose -f docker/docker-compose.yml up --build
 
 Observacoes:
 
-- o servico de `migration` ainda nao entra nesta fase
-- a persistencia real sera consolidada na fase de MySQL
+- o servico `migrations` aplica a migration inicial e executa o seed idempotente
+- o menu passa a ser lido do MySQL, nao mais de uma fonte em memoria
+- o seed inicial inclui o catalogo do desafio e alguns pedidos de exemplo
 
-## Foundation Scope
+## Persistencia Atual
 
 Nesta etapa, a solution entrega:
 
-- projetos base criados e referenciados
-- API pronta para evoluir com `v1`, Swagger e `ProblemDetails`
-- frontend Blazor preparado para evolucao posterior
-- configuracoes iniciais por ambiente
-- estrutura Docker base com `API + Blazor + MySQL`
+- `DbContext` restrito a `Infrastructure`
+- leitura do menu a partir do MySQL
+- persistencia inicial do agregado `Order`
+- migration inicial e seed idempotente
+- servico dedicado de migration no `docker-compose`
+- testes de integracao com MySQL real via Testcontainers
 
 ## Roadmap Resumido
 
 Proximas fases principais:
 
-1. dominio do cardapio
-2. modelagem de pedido
-3. persistencia MySQL
-4. regras de validacao
-5. calculo de valores
-6. CRUD de pedidos
-7. infraestrutura transversal
-8. frontend funcional
+1. regras de validacao
+2. calculo de valores
+3. CRUD de pedidos
+4. infraestrutura transversal
+5. frontend funcional
 
 Os detalhes completos estao em `specs/roadmap.md`.
