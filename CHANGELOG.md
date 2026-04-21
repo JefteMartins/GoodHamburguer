@@ -14,6 +14,11 @@ Todas as mudancas relevantes deste projeto serao registradas aqui.
 - estrutura Docker base com `API + Blazor + MySQL`
 - README inicial da fundacao
 - smoke tests da fundacao com `FluentAssertions`
+- especificacao da feature da Fase 2 em `specs/2026-04-21-phase-2-menu-domain/`
+- dominio do cardapio com categorias como `value object`
+- consulta de cardapio via abstracao preparada para persistencia futura
+- endpoint `GET /api/v1/menu` com resposta agrupada por categoria
+- testes unitarios e de integracao para a consulta do cardapio
 
 ## [2026-04-20]
 
