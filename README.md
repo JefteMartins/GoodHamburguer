@@ -61,11 +61,13 @@ O ambiente local previsto e:
 Comando principal:
 
 ```powershell
+Copy-Item .env.example .env
 docker compose -f docker/docker-compose.yml up --build
 ```
 
 Observacoes:
 
+- o arquivo `.env` deve existir antes de subir o ambiente; use `.env.example` como base
 - o servico `migrations` aplica a migration inicial e executa o seed idempotente
 - o menu passa a ser lido do MySQL, nao mais de uma fonte em memoria
 - o seed inicial inclui o catalogo do desafio e alguns pedidos de exemplo

@@ -88,7 +88,7 @@ public sealed class MySqlWebApplicationFactory : WebApplicationFactory<GoodHambu
         }
 
         throw new InvalidOperationException(
-            $"Timed out waiting for MySQL test container. Connection string: {connectionString}",
+            "Timed out waiting for the MySQL test container to become available.",
             lastException);
     }
 }

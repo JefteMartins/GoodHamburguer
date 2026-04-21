@@ -6,7 +6,11 @@ services:
     command: ["--migrate-only"]
     environment:
       ASPNETCORE_ENVIRONMENT: Development
-      ConnectionStrings__DefaultConnection: Server=mysql;Port=3306;Database=goodhamburguer;User=root;Password=root
+      Database__Host: mysql
+      Database__Port: 3306
+      Database__Name: ${MYSQL_DATABASE}
+      Database__User: ${MYSQL_APP_USER}
+      Database__Password: ${MYSQL_APP_PASSWORD}
       Database__RunMigrationsOnly: "true"
     depends_on:
       mysql:
@@ -20,7 +24,11 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: http://+:8080
-      ConnectionStrings__DefaultConnection: Server=mysql;Port=3306;Database=goodhamburguer;User=root;Password=root
+      Database__Host: mysql
+      Database__Port: 3306
+      Database__Name: ${MYSQL_DATABASE}
+      Database__User: ${MYSQL_APP_USER}
+      Database__Password: ${MYSQL_APP_PASSWORD}
     ports:
       - "8081:8080"
     depends_on:
@@ -44,14 +52,20 @@ services:
   mysql:
     image: mysql:8.4
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: goodhamburguer
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_APP_USER}
+      MYSQL_PASSWORD: ${MYSQL_APP_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-proot"]
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -u$${MYSQL_USER} -p$${MYSQL_PASSWORD}"
+        ]
       interval: 10s
       timeout: 5s
       retries: 10
