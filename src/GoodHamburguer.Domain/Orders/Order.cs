@@ -1,3 +1,5 @@
+using GoodHamburguer.Domain.Menu;
+
 namespace GoodHamburguer.Domain.Orders;
 
 public sealed class Order
@@ -56,5 +58,32 @@ public sealed class Order
         Sandwich = sandwich;
         Side = side;
         Drink = drink;
+    }
+
+    public OrderPricing CalculatePricing(IReadOnlyDictionary<string, MenuItem> menuItemsByCode)
+    {
+        ArgumentNullException.ThrowIfNull(menuItemsByCode);
+
+        var subtotal = GetSelectionPrice(menuItemsByCode, Sandwich)
+            + GetSelectionPrice(menuItemsByCode, Side)
+            + GetSelectionPrice(menuItemsByCode, Drink);
+
+        var discount = Sandwich is not null && Side is not null && Drink is not null
+            ? subtotal * 0.20m
+            : 0m;
+
+        return new OrderPricing(subtotal, discount, subtotal - discount);
+    }
+
+    private static decimal GetSelectionPrice(
+        IReadOnlyDictionary<string, MenuItem> menuItemsByCode,
+        OrderItemSelection? selection)
+    {
+        if (selection is null)
+        {
+            return 0m;
+        }
+
+        return menuItemsByCode[selection.ItemCode].Price;
     }
 }

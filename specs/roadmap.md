@@ -61,7 +61,7 @@ Objetivo: impedir entradas invalidas logo no inicio.
 - padronizar respostas de erro com `ProblemDetails`
 - adicionar testes cobrindo cenarios invalidos relevantes
 
-## Fase 6 - Calculo de Valores
+## Fase 6 - Calculo de Valores [Concluida]
 
 Objetivo: aplicar corretamente as regras do desafio.
 
