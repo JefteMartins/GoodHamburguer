@@ -40,6 +40,18 @@ ScaffoldingReadMe.txt
 ~$*
 *~
 CodeCoverage/
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+*.cache
+.dotnet/
+.nuget/
+.env
+.env.*
+appsettings.Local.json
+appsettings.*.Local.json
 
 # MSBuild Binary and Structured Log
 *.binlog

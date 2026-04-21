@@ -4,7 +4,7 @@
 
 A implementacao deve avancar em fases pequenas, cada uma deixando o sistema em um estado executavel e demonstravel.
 
-## Fase 1 - Fundacao do Projeto
+## Fase 1 - Fundacao do Projeto [Concluida]
 
 Objetivo: preparar a base da solucao.
 
@@ -17,7 +17,7 @@ Objetivo: preparar a base da solucao.
 - preparar a base arquitetural para o frontend em Blazor, sem implementa-lo ainda
 - estruturar a pasta `docker/`
 - adicionar Dockerfiles da API e do Blazor
-- adicionar `docker-compose.yml` com API, Blazor, MySQL e servico de migration
+- adicionar `docker-compose.yml` com API, Blazor e MySQL
 - definir configuracao inicial por variaveis de ambiente
 - adicionar README inicial com objetivo e instrucoes basicas
 
