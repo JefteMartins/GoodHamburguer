@@ -4,7 +4,7 @@
 
 A implementacao deve avancar em fases pequenas, cada uma deixando o sistema em um estado executavel e demonstravel.
 
-## Fase 1 - Fundacao do Projeto
+## Fase 1 - Fundacao do Projeto [Concluida]
 
 Objetivo: preparar a base da solucao.
 
