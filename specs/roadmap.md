@@ -21,7 +21,7 @@ Objetivo: preparar a base da solucao.
 - definir configuracao inicial por variaveis de ambiente
 - adicionar README inicial com objetivo e instrucoes basicas
 
-## Fase 2 - Dominio do Cardapio
+## Fase 2 - Dominio do Cardapio [Concluida]
 
 Objetivo: representar o cardapio e os tipos de item.
 
