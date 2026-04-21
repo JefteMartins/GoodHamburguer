@@ -1,0 +1,55 @@
+name: Open PR from develop to main
+
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  open-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for existing open PR
+        id: check_pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+
+            const response = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: "open",
+              head: `${owner}:develop`,
+              base: "main"
+            });
+
+            core.setOutput("count", String(response.data.length));
+
+      - name: Create PR from develop to main
+        if: steps.check_pr.outputs.count == '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+
+            const response = await github.rest.pulls.create({
+              owner,
+              repo,
+              title: "chore(release): promote develop to main",
+              head: "develop",
+              base: "main",
+              body: [
+                "PR criado automaticamente apos um push em `develop`.",
+                "",
+                "Objetivo:",
+                "- promover as mudancas validadas de `develop` para `main`"
+              ].join("\n")
+            });
+
+            core.info(`PR criado: ${response.data.html_url}`);
