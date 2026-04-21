@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/GoodHamburguer.Api/GoodHamburguer.Api.csproj" />
+    <Project Path="src/GoodHamburguer.Application/GoodHamburguer.Application.csproj" />
+    <Project Path="src/GoodHamburguer.Blazor/GoodHamburguer.Blazor.csproj" />
+    <Project Path="src/GoodHamburguer.Domain/GoodHamburguer.Domain.csproj" />
+    <Project Path="src/GoodHamburguer.Infrastructure/GoodHamburguer.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/GoodHamburguer.IntegrationTests/GoodHamburguer.IntegrationTests.csproj" />
+    <Project Path="tests/GoodHamburguer.UnitTests/GoodHamburguer.UnitTests.csproj" />
+  </Folder>
+</Solution>

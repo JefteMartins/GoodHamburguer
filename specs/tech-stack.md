@@ -54,11 +54,11 @@ Docker deve entrar desde a primeira fase para que qualquer avaliador consiga sub
 - container da API
 - container do frontend Blazor
 - container do MySQL com imagem oficial `mysql:8.4`
-- servico de migracao no `docker-compose`, reutilizando a imagem da aplicacao para executar migrations e seed
 - variaveis de ambiente para conexao
 - comando unico para subir tudo com `docker compose up --build`
-- aplicacao das migrations por container dedicado
-- seed inicial para demonstracao, incluindo cardapio e alguns pedidos de exemplo
+- estrutura pronta para receber um servico de migracao no `docker-compose`
+
+O servico de migracao, reutilizando a imagem da aplicacao para executar migrations e seed, deve entrar junto com a fase de persistencia real. Nesse momento, ele sera responsavel por aplicar as migrations e preparar o seed inicial de demonstracao, incluindo cardapio e alguns pedidos de exemplo.
 
 ### Modelagem de Pedido
 
