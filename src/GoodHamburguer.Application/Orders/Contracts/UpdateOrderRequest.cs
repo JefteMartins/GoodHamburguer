@@ -2,9 +2,9 @@ namespace GoodHamburguer.Application.Orders.Contracts;
 
 public sealed class UpdateOrderRequest
 {
-    public OrderItemInput? Sandwich { get; init; }
+    public string? SandwichItemCode { get; init; }
 
-    public OrderItemInput? Side { get; init; }
+    public string? SideItemCode { get; init; }
 
-    public OrderItemInput? Drink { get; init; }
+    public string? DrinkItemCode { get; init; }
 }

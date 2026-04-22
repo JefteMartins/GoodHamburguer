@@ -13,9 +13,9 @@ public class MenuAppServiceTests
         var service = new MenuAppService(new StubMenuQueryService(
             new MenuCatalog(
             [
-                new MenuItem("X Burger", MenuCategory.Sandwiches, 5.00m),
-                new MenuItem("X Bacon", MenuCategory.Sandwiches, 7.00m),
-                new MenuItem("Refrigerante", MenuCategory.Drinks, 2.50m)
+                new MenuItem("sandwich-x-burger", "X Burger", MenuCategory.Sandwiches, 5.00m),
+                new MenuItem("sandwich-x-bacon", "X Bacon", MenuCategory.Sandwiches, 7.00m),
+                new MenuItem("drink-soft-drink", "Refrigerante", MenuCategory.Drinks, 2.50m)
             ])));
 
         var response = await service.GetMenuAsync();
@@ -27,6 +27,9 @@ public class MenuAppServiceTests
         response.Single(group => group.Code == "sandwiches").Items.Select(item => item.Name)
             .Should()
             .Equal("X Bacon", "X Burger");
+        response.Single(group => group.Code == "sandwiches").Items.Select(item => item.Code)
+            .Should()
+            .Equal("sandwich-x-bacon", "sandwich-x-burger");
     }
 
     private sealed class StubMenuQueryService(MenuCatalog catalog) : IMenuQueryService

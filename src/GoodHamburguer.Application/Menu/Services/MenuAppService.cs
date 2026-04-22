@@ -18,6 +18,7 @@ public sealed class MenuAppService(IMenuQueryService menuQueryService) : IMenuAp
                     .Items
                     .Select(item => new MenuItemResponse
                     {
+                        Code = item.Code,
                         Name = item.Name,
                         Price = item.Price
                     })

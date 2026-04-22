@@ -1,5 +1,4 @@
 using GoodHamburguer.Application.Orders.Abstractions;
-using GoodHamburguer.Domain.Menu;
 using GoodHamburguer.Domain.Orders;
 using GoodHamburguer.Infrastructure.Persistence;
 using GoodHamburguer.Infrastructure.Persistence.Entities;
@@ -7,11 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace GoodHamburguer.Infrastructure.Orders;
 
-public sealed class MySqlOrderRepository : IOrderRepository
+public sealed class OrderRepository : IOrderRepository
 {
     private readonly GoodHamburguerDbContext _dbContext;
 
-    public MySqlOrderRepository(GoodHamburguerDbContext dbContext)
+    public OrderRepository(GoodHamburguerDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -19,6 +18,19 @@ public sealed class MySqlOrderRepository : IOrderRepository
     public async Task AddAsync(Order order, CancellationToken cancellationToken = default)
     {
         _dbContext.Orders.Add(GoodHamburguerDbInitializer.MapOrder(order));
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateAsync(Order order, CancellationToken cancellationToken = default)
+    {
+        var entity = await _dbContext.Orders
+            .SingleAsync(existingOrder => existingOrder.Id == order.Id, cancellationToken);
+
+        entity.UpdatedAtUtc = order.UpdatedAtUtc;
+        entity.SandwichItemCode = order.Sandwich?.ItemCode;
+        entity.SideItemCode = order.Side?.ItemCode;
+        entity.DrinkItemCode = order.Drink?.ItemCode;
+
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
@@ -33,9 +45,9 @@ public sealed class MySqlOrderRepository : IOrderRepository
 
     private static Order MapOrder(OrderEntity entity)
     {
-        var sandwich = ToSelection(entity.SandwichName, MenuCategory.Sandwiches, entity.SandwichUnitPrice);
-        var side = ToSelection(entity.SideName, MenuCategory.Sides, entity.SideUnitPrice);
-        var drink = ToSelection(entity.DrinkName, MenuCategory.Drinks, entity.DrinkUnitPrice);
+        var sandwich = ToSelection(entity.SandwichItemCode);
+        var side = ToSelection(entity.SideItemCode);
+        var drink = ToSelection(entity.DrinkItemCode);
 
         var order = Order.Create(
             entity.Id,
@@ -52,10 +64,10 @@ public sealed class MySqlOrderRepository : IOrderRepository
         return order;
     }
 
-    private static OrderItemSelection? ToSelection(string? name, MenuCategory category, decimal? unitPrice)
+    private static OrderItemSelection? ToSelection(string? itemCode)
     {
-        return string.IsNullOrWhiteSpace(name) || unitPrice is null
+        return string.IsNullOrWhiteSpace(itemCode)
             ? null
-            : new OrderItemSelection(name, category, unitPrice.Value);
+            : new OrderItemSelection(itemCode);
     }
 }

@@ -61,36 +61,48 @@ namespace GoodHamburguer.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreatedAtUtc")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("DrinkName")
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)");
+                    b.Property<string>("DrinkItemCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
 
-                    b.Property<decimal?>("DrinkUnitPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                    b.Property<string>("SandwichItemCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
 
-                    b.Property<string>("SandwichName")
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)");
-
-                    b.Property<decimal?>("SandwichUnitPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
-
-                    b.Property<string>("SideName")
-                        .HasMaxLength(120)
-                        .HasColumnType("varchar(120)");
-
-                    b.Property<decimal?>("SideUnitPrice")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                    b.Property<string>("SideItemCode")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
 
                     b.Property<DateTimeOffset>("UpdatedAtUtc")
                         .HasColumnType("datetime(6)");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DrinkItemCode");
+
+                    b.HasIndex("SandwichItemCode");
+
+                    b.HasIndex("SideItemCode");
+
                     b.ToTable("orders", (string)null);
+                });
+
+            modelBuilder.Entity("GoodHamburguer.Infrastructure.Persistence.Entities.OrderEntity", b =>
+                {
+                    b.HasOne("GoodHamburguer.Infrastructure.Persistence.Entities.MenuItemEntity", null)
+                        .WithMany()
+                        .HasForeignKey("DrinkItemCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GoodHamburguer.Infrastructure.Persistence.Entities.MenuItemEntity", null)
+                        .WithMany()
+                        .HasForeignKey("SandwichItemCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("GoodHamburguer.Infrastructure.Persistence.Entities.MenuItemEntity", null)
+                        .WithMany()
+                        .HasForeignKey("SideItemCode")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 #pragma warning restore 612, 618
         }

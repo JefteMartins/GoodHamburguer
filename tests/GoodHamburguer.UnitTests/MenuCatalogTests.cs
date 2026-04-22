@@ -10,10 +10,10 @@ public class MenuCatalogTests
     {
         var catalog = new MenuCatalog(
         [
-            new MenuItem("X Bacon", MenuCategory.Sandwiches, 7.00m),
-            new MenuItem("Refrigerante", MenuCategory.Drinks, 2.50m),
-            new MenuItem("Batata frita", MenuCategory.Sides, 2.00m),
-            new MenuItem("X Burger", MenuCategory.Sandwiches, 5.00m)
+            new MenuItem("sandwich-x-bacon", "X Bacon", MenuCategory.Sandwiches, 7.00m),
+            new MenuItem("drink-soft-drink", "Refrigerante", MenuCategory.Drinks, 2.50m),
+            new MenuItem("side-fries", "Batata frita", MenuCategory.Sides, 2.00m),
+            new MenuItem("sandwich-x-burger", "X Burger", MenuCategory.Sandwiches, 5.00m)
         ]);
 
         var groups = catalog.GroupByCategory();
@@ -27,5 +27,19 @@ public class MenuCatalogTests
         sandwiches.Items.Select(item => item.Name)
             .Should()
             .Equal("X Bacon", "X Burger");
+    }
+
+    [Fact]
+    public void FindByCode_ShouldReturnMatchingItemIgnoringCase()
+    {
+        var catalog = new MenuCatalog(
+        [
+            new MenuItem("sandwich-x-burger", "X Burger", MenuCategory.Sandwiches, 5.00m)
+        ]);
+
+        var item = catalog.FindByCode("SANDWICH-X-BURGER");
+
+        item.Should().NotBeNull();
+        item!.Name.Should().Be("X Burger");
     }
 }

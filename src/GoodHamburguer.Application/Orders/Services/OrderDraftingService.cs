@@ -1,5 +1,4 @@
 using GoodHamburguer.Application.Orders.Contracts;
-using GoodHamburguer.Domain.Menu;
 using GoodHamburguer.Domain.Orders;
 
 namespace GoodHamburguer.Application.Orders.Services;
@@ -12,9 +11,9 @@ public sealed class OrderDraftingService : IOrderDraftingService
 
         return Order.Create(
             orderId,
-            sandwich: ToSelection(request.Sandwich, MenuCategory.Sandwiches),
-            side: ToSelection(request.Side, MenuCategory.Sides),
-            drink: ToSelection(request.Drink, MenuCategory.Drinks),
+            sandwich: ToSelection(request.SandwichItemCode),
+            side: ToSelection(request.SideItemCode),
+            drink: ToSelection(request.DrinkItemCode),
             createdAtUtc: createdAtUtc);
     }
 
@@ -24,16 +23,16 @@ public sealed class OrderDraftingService : IOrderDraftingService
         ArgumentNullException.ThrowIfNull(request);
 
         order.UpdateItems(
-            sandwich: ToSelection(request.Sandwich, MenuCategory.Sandwiches),
-            side: ToSelection(request.Side, MenuCategory.Sides),
-            drink: ToSelection(request.Drink, MenuCategory.Drinks),
+            sandwich: ToSelection(request.SandwichItemCode),
+            side: ToSelection(request.SideItemCode),
+            drink: ToSelection(request.DrinkItemCode),
             updatedAtUtc: updatedAtUtc);
     }
 
-    private static OrderItemSelection? ToSelection(OrderItemInput? input, MenuCategory category)
+    private static OrderItemSelection? ToSelection(string? itemCode)
     {
-        return input is null
+        return string.IsNullOrWhiteSpace(itemCode)
             ? null
-            : new OrderItemSelection(input.Name, category, input.UnitPrice);
+            : new OrderItemSelection(itemCode);
     }
 }
