@@ -1,11 +1,18 @@
 using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
+using GoodHamburguer.Api.Exceptions;
+using GoodHamburguer.Api.HealthChecks;
 using GoodHamburguer.Api.Swagger;
 using GoodHamburguer.Application;
 using GoodHamburguer.Infrastructure;
 using GoodHamburguer.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Serilog;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace GoodHamburguer.Api;
@@ -16,8 +23,19 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
+        builder.Host.UseSerilog((context, services, configuration) => configuration
+            .ReadFrom.Configuration(context.Configuration)
+            .ReadFrom.Services(services)
+            .Enrich.FromLogContext()
+            .WriteTo.Console());
+
         builder.Services.AddProblemDetails();
-        builder.Services.AddControllers();
+        builder.Services
+            .AddControllers(options => options.Filters.Add<GlobalExceptionFilter>());
+
+        builder.Services.AddScoped<GlobalExceptionFilter>();
+        builder.Services.AddSingleton<IExceptionProblemDetailsMapper, KeyNotFoundExceptionProblemDetailsMapper>();
+        builder.Services.AddSingleton<IExceptionProblemDetailsMapper, FluentValidationExceptionProblemDetailsMapper>();
 
         builder.Services.AddApiVersioning(options =>
             {
@@ -42,6 +60,16 @@ public class Program
             options.SuppressMapClientErrors = false;
         });
 
+        builder.Services.AddOpenTelemetry()
+            .ConfigureResource(resource => resource.AddService("GoodHamburguer.Api"))
+            .WithTracing(tracing => tracing
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation());
+
+        builder.Services.AddHealthChecks()
+            .AddCheck("self", () => HealthCheckResult.Healthy(), tags: ["live"])
+            .AddCheck<MySqlReadinessHealthCheck>("mysql", tags: ["ready"]);
+
         builder.Services.AddApplication();
         builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -57,6 +85,7 @@ public class Program
         }
 
         app.UseExceptionHandler();
+        app.UseSerilogRequestLogging();
 
         app.UseSwagger();
         app.UseSwaggerUI(options =>
@@ -72,6 +101,14 @@ public class Program
         });
 
         app.UseAuthorization();
+        app.MapHealthChecks("/health/live", new HealthCheckOptions
+        {
+            Predicate = registration => registration.Tags.Contains("live")
+        });
+        app.MapHealthChecks("/health/ready", new HealthCheckOptions
+        {
+            Predicate = registration => registration.Tags.Contains("ready")
+        });
         app.MapControllers();
         await app.RunAsync();
     }

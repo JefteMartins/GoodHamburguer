@@ -84,7 +84,7 @@ Objetivo: entregar os endpoints principais.
 - implementar o CRUD ja sobre a persistencia real
 - expor os endpoints em `v1`
 
-## Fase 8 - Infraestrutura Transversal
+## Fase 8 - Infraestrutura Transversal [Concluida]
 
 Objetivo: adicionar capacidades transversais importantes para operacao e avaliacao tecnica.
 
