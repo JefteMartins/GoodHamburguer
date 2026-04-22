@@ -58,19 +58,56 @@ O ambiente local previsto e:
 - `api` em `http://localhost:8081`
 - `mysql` em `localhost:3306`
 
-Comando principal:
+Pre-requisitos minimos:
+
+- Docker Desktop (ou Docker Engine + Compose v2)
+- portas `8080`, `8081` e `3306` livres
+
+Fluxo oficial:
 
 ```powershell
-Copy-Item .env.example .env
-docker compose -f docker/docker-compose.yml up --build
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+docker compose --env-file .env -f docker/docker-compose.yml config
+docker compose --env-file .env -f docker/docker-compose.yml up --build
 ```
 
-Observacoes:
+Ordem esperada de inicializacao:
+
+1. `mysql` fica `healthy`
+2. `migrations` executa migration/seed e finaliza com sucesso
+3. `api` sobe e passa no healthcheck
+4. `blazor` sobe apos a API saudavel
+
+Verificacao de saude:
+
+```powershell
+Invoke-WebRequest http://localhost:8081/health/live
+Invoke-WebRequest http://localhost:8081/health/ready
+```
+
+Comandos uteis:
+
+```powershell
+docker compose --env-file .env -f docker/docker-compose.yml ps
+docker compose --env-file .env -f docker/docker-compose.yml logs -f api
+docker compose --env-file .env -f docker/docker-compose.yml logs -f blazor
+docker compose --env-file .env -f docker/docker-compose.yml logs -f migrations
+docker compose --env-file .env -f docker/docker-compose.yml down
+```
+
+Observacoes importantes:
 
 - o arquivo `.env` deve existir antes de subir o ambiente; use `.env.example` como base
 - o servico `migrations` aplica a migration inicial e executa o seed idempotente
 - o menu passa a ser lido do MySQL, nao mais de uma fonte em memoria
 - o seed inicial inclui o catalogo do desafio e alguns pedidos de exemplo
+
+Troubleshooting rapido:
+
+- `port is already allocated`: liberar a porta em uso ou ajustar mapeamento no `docker-compose.yml`
+- `migrations` falhou: verificar logs de `migrations` e status do `mysql` (`docker compose ... ps`)
+- `api` ou `blazor` ficando `unhealthy`: verificar logs do servico e confirmar que o processo subiu na porta `8080` dentro do container
+- `readiness` falhando: validar credenciais do `.env` e disponibilidade real do MySQL
 
 ## Persistencia Atual
 
@@ -87,10 +124,8 @@ Nesta etapa, a solution entrega:
 
 Proximas fases principais:
 
-1. regras de validacao
-2. calculo de valores
-3. CRUD de pedidos
-4. infraestrutura transversal
-5. frontend funcional
+1. frontend funcional em Blazor
+2. consolidacao de testes e cobertura
+3. refinamentos operacionais e de documentacao
 
 Os detalhes completos estao em `specs/roadmap.md`.

@@ -95,7 +95,7 @@ Objetivo: adicionar capacidades transversais importantes para operacao e avaliac
 - adicionar testes de integracao end-to-end com persistencia real
 - configurar GitHub Actions com restore, build, testes unitarios e testes de integracao em `push` e `pull request`
 
-## Fase 9 - Integracao via Docker
+## Fase 9 - Integracao via Docker [Concluida]
 
 Objetivo: facilitar execucao e avaliacao do projeto.
 

@@ -4,6 +4,7 @@ Todas as mudancas relevantes deste projeto sao registradas aqui com data e hora 
 
 ## [Unreleased]
 
+- [2026-04-22 17:09 -03:00] Implementacao e validacao da Fase 9 com hardening leve do `docker-compose` (`healthcheck` em `api` e `blazor`, `depends_on` por saude e `restart policy`), ajuste dos Dockerfiles para probes HTTP com `curl`, documentacao operacional expandida no `README` e evidencia de stack completa saudavel (`mysql`, `migrations`, `api`, `blazor`) com readiness real.
 - [2026-04-22 13:05 -03:00] Implementacao e validacao funcional da Fase 8 com `Serilog`, traces basicos com `OpenTelemetry`, health checks em `/health/live` e `/health/ready`, filtro global de excecoes com `ProblemDetails`, testes de integracao para saude e tratamento de erros e workflow principal de CI em `.github/workflows/ci.yml`.
 - [2026-04-21 21:47 -03:00] Implementacao e validacao da Fase 7 com CRUD completo de pedidos em `v1`, incluindo listagem, consulta por identificador e remocao sobre persistencia MySQL real, com cobertura unitaria da aplicacao e testes de integracao HTTP do fluxo completo.
 - [2026-04-21 20:58 -03:00] Implementacao e validacao da Fase 6 com calculo de `subtotal`, `discount` e `total` no dominio do pedido, exposicao dos valores nas respostas de criacao e atualizacao, ampliacao da cobertura unitaria da regra monetaria e validacao de integracao HTTP do contrato com desconto.
