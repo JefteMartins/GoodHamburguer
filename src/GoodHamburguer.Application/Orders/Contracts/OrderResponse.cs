@@ -10,6 +10,12 @@ public sealed class OrderResponse
 
     public string? DrinkItemCode { get; init; }
 
+    public required decimal Subtotal { get; init; }
+
+    public required decimal Discount { get; init; }
+
+    public required decimal Total { get; init; }
+
     public required DateTimeOffset CreatedAtUtc { get; init; }
 
     public required DateTimeOffset UpdatedAtUtc { get; init; }

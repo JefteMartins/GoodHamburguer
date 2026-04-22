@@ -4,6 +4,7 @@ Todas as mudancas relevantes deste projeto sao registradas aqui com data e hora 
 
 ## [Unreleased]
 
+- [2026-04-21 20:58 -03:00] Implementacao e validacao da Fase 6 com calculo de `subtotal`, `discount` e `total` no dominio do pedido, exposicao dos valores nas respostas de criacao e atualizacao, ampliacao da cobertura unitaria da regra monetaria e validacao de integracao HTTP do contrato com desconto.
 - [2026-04-21 17:35 -03:00] Implementacao da Fase 5 com validacao de criacao e atualizacao de pedido por `itemCode`, erros `422` com `ProblemDetails`, respostas separadas por campo, endpoint minimo de pedidos e refatoracao da persistencia para armazenar codigos por slot.
 - [2026-04-21 17:10 -03:00] Sanitizacao da configuracao de banco para evitar `connection strings` e senhas hardcoded em `appsettings`, `docker-compose` e mensagens de erro de testes de integracao, com uso de `.env.example` para o ambiente Docker.
 - [2026-04-21 16:28 -03:00] Implementacao da Fase 4 com persistencia real de catalogo e pedidos em MySQL, `DbContext` e repositórios na `Infrastructure`, migration inicial, seed idempotente, servico `migrations` no Docker Compose e testes de integracao com MySQL real via Testcontainers.
