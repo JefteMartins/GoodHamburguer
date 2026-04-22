@@ -21,6 +21,18 @@ public sealed class OrderRepository : IOrderRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Order>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        var entities = await _dbContext.Orders
+            .AsNoTracking()
+            .OrderBy(order => order.CreatedAtUtc)
+            .ToListAsync(cancellationToken);
+
+        return entities
+            .Select(MapOrder)
+            .ToArray();
+    }
+
     public async Task UpdateAsync(Order order, CancellationToken cancellationToken = default)
     {
         var entity = await _dbContext.Orders
@@ -41,6 +53,15 @@ public sealed class OrderRepository : IOrderRepository
             .SingleOrDefaultAsync(order => order.Id == orderId, cancellationToken);
 
         return entity is null ? null : MapOrder(entity);
+    }
+
+    public async Task<bool> DeleteAsync(Guid orderId, CancellationToken cancellationToken = default)
+    {
+        var affectedRows = await _dbContext.Orders
+            .Where(order => order.Id == orderId)
+            .ExecuteDeleteAsync(cancellationToken);
+
+        return affectedRows > 0;
     }
 
     private static Order MapOrder(OrderEntity entity)

@@ -109,6 +109,143 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
         order!.Subtotal.Should().Be(9.50m);
         order.Discount.Should().Be(1.90m);
         order.Total.Should().Be(7.60m);
+        order.CreatedAtUtc.Should().NotBe(default);
+        order.UpdatedAtUtc.Should().Be(order.CreatedAtUtc);
+    }
+
+    [Fact]
+    public async Task GetById_ShouldReturnExistingOrder()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/v1/orders", new
+        {
+            sandwichItemCode = "sandwich-x-burger",
+            sideItemCode = "side-fries",
+            drinkItemCode = "drink-soft-drink"
+        });
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var createdOrder = await createResponse.Content.ReadFromJsonAsync<OrderContract>();
+        createdOrder.Should().NotBeNull();
+        var expectedCreatedAtUtc = TruncateToMicroseconds(createdOrder!.CreatedAtUtc);
+        var expectedUpdatedAtUtc = TruncateToMicroseconds(createdOrder.UpdatedAtUtc);
+
+        var getResponse = await _client.GetAsync($"/api/v1/orders/{createdOrder.Id}");
+
+        getResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var order = await getResponse.Content.ReadFromJsonAsync<OrderContract>();
+        order.Should().NotBeNull();
+        order!.Id.Should().Be(createdOrder.Id);
+        order.SandwichItemCode.Should().Be("sandwich-x-burger");
+        order.SideItemCode.Should().Be("side-fries");
+        order.DrinkItemCode.Should().Be("drink-soft-drink");
+        order.Subtotal.Should().Be(9.50m);
+        order.Discount.Should().Be(1.90m);
+        order.Total.Should().Be(7.60m);
+        order.CreatedAtUtc.Should().Be(expectedCreatedAtUtc);
+        order.UpdatedAtUtc.Should().Be(expectedUpdatedAtUtc);
+    }
+
+    [Fact]
+    public async Task List_ShouldReturnPersistedOrders()
+    {
+        var initialListResponse = await _client.GetAsync("/api/v1/orders");
+        initialListResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var initialOrders = await initialListResponse.Content.ReadFromJsonAsync<List<OrderContract>>();
+        initialOrders.Should().NotBeNull();
+
+        var firstCreateResponse = await _client.PostAsJsonAsync("/api/v1/orders", new
+        {
+            sandwichItemCode = "sandwich-x-burger",
+            drinkItemCode = "drink-soft-drink"
+        });
+
+        firstCreateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var firstCreatedOrder = await firstCreateResponse.Content.ReadFromJsonAsync<OrderContract>();
+        firstCreatedOrder.Should().NotBeNull();
+        var firstExpectedCreatedAtUtc = TruncateToMicroseconds(firstCreatedOrder!.CreatedAtUtc);
+        var firstExpectedUpdatedAtUtc = TruncateToMicroseconds(firstCreatedOrder.UpdatedAtUtc);
+
+        var secondCreateResponse = await _client.PostAsJsonAsync("/api/v1/orders", new
+        {
+            sandwichItemCode = "sandwich-x-egg",
+            sideItemCode = "side-fries"
+        });
+
+        secondCreateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var secondCreatedOrder = await secondCreateResponse.Content.ReadFromJsonAsync<OrderContract>();
+        secondCreatedOrder.Should().NotBeNull();
+        var secondExpectedCreatedAtUtc = TruncateToMicroseconds(secondCreatedOrder!.CreatedAtUtc);
+        var secondExpectedUpdatedAtUtc = TruncateToMicroseconds(secondCreatedOrder.UpdatedAtUtc);
+
+        var listResponse = await _client.GetAsync("/api/v1/orders");
+
+        listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var orders = await listResponse.Content.ReadFromJsonAsync<List<OrderContract>>();
+        orders.Should().NotBeNull();
+        orders.Should().HaveCount(initialOrders!.Count + 2);
+        orders.Should().ContainSingle(order =>
+            order.Id == firstCreatedOrder.Id
+            && order.SandwichItemCode == "sandwich-x-burger"
+            && order.SideItemCode == null
+            && order.DrinkItemCode == "drink-soft-drink"
+            && order.Subtotal == 7.50m
+            && order.Discount == 0m
+            && order.Total == 7.50m
+            && order.CreatedAtUtc == firstExpectedCreatedAtUtc
+            && order.UpdatedAtUtc == firstExpectedUpdatedAtUtc);
+        orders.Should().ContainSingle(order =>
+            order.Id == secondCreatedOrder.Id
+            && order.SandwichItemCode == "sandwich-x-egg"
+            && order.SideItemCode == "side-fries"
+            && order.DrinkItemCode == null
+            && order.Subtotal == 6.50m
+            && order.Discount == 0m
+            && order.Total == 6.50m
+            && order.CreatedAtUtc == secondExpectedCreatedAtUtc
+            && order.UpdatedAtUtc == secondExpectedUpdatedAtUtc);
+    }
+
+    [Fact]
+    public async Task Delete_ShouldRemoveExistingOrder()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/v1/orders", new
+        {
+            sandwichItemCode = "sandwich-x-burger"
+        });
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var createdOrder = await createResponse.Content.ReadFromJsonAsync<OrderContract>();
+        createdOrder.Should().NotBeNull();
+
+        var deleteResponse = await _client.DeleteAsync($"/api/v1/orders/{createdOrder!.Id}");
+
+        deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+
+        var getResponse = await _client.GetAsync($"/api/v1/orders/{createdOrder.Id}");
+        getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task GetById_ShouldReturnNotFound_WhenOrderDoesNotExist()
+    {
+        var response = await _client.GetAsync($"/api/v1/orders/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Delete_ShouldReturnNotFound_WhenOrderDoesNotExist()
+    {
+        var response = await _client.DeleteAsync($"/api/v1/orders/{Guid.NewGuid()}");
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     public sealed class OrderContract
@@ -126,10 +263,20 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
         public decimal Discount { get; init; }
 
         public decimal Total { get; init; }
+
+        public DateTimeOffset CreatedAtUtc { get; init; }
+
+        public DateTimeOffset UpdatedAtUtc { get; init; }
     }
 
     public sealed class ValidationProblemContract
     {
         public required IDictionary<string, string[]> Errors { get; init; }
+    }
+
+    private static DateTimeOffset TruncateToMicroseconds(DateTimeOffset value)
+    {
+        const long ticksPerMicrosecond = 10;
+        return new DateTimeOffset(value.Ticks - (value.Ticks % ticksPerMicrosecond), value.Offset);
     }
 }
