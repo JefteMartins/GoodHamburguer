@@ -1,5 +1,4 @@
 using Asp.Versioning;
-using FluentValidation;
 using GoodHamburguer.Application.Orders.Contracts;
 using GoodHamburguer.Application.Orders.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -24,15 +23,8 @@ public sealed class OrdersController(IOrderAppService orderAppService) : Control
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<OrderResponse>> GetById(Guid id, CancellationToken cancellationToken)
     {
-        try
-        {
-            var order = await orderAppService.GetByIdAsync(id, cancellationToken);
-            return Ok(order);
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        var order = await orderAppService.GetByIdAsync(id, cancellationToken);
+        return Ok(order);
     }
 
     [HttpPost]
@@ -42,15 +34,8 @@ public sealed class OrdersController(IOrderAppService orderAppService) : Control
         [FromBody] CreateOrderRequest request,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var order = await orderAppService.CreateAsync(request, cancellationToken);
-            return Ok(order);
-        }
-        catch (ValidationException exception)
-        {
-            return UnprocessableEntity(ToValidationProblemDetails(exception));
-        }
+        var order = await orderAppService.CreateAsync(request, cancellationToken);
+        return Ok(order);
     }
 
     [HttpPut("{id:guid}")]
@@ -62,19 +47,8 @@ public sealed class OrdersController(IOrderAppService orderAppService) : Control
         [FromBody] UpdateOrderRequest request,
         CancellationToken cancellationToken)
     {
-        try
-        {
-            var order = await orderAppService.UpdateAsync(id, request, cancellationToken);
-            return Ok(order);
-        }
-        catch (ValidationException exception)
-        {
-            return UnprocessableEntity(ToValidationProblemDetails(exception));
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        var order = await orderAppService.UpdateAsync(id, request, cancellationToken);
+        return Ok(order);
     }
 
     [HttpDelete("{id:guid}")]
@@ -82,29 +56,7 @@ public sealed class OrdersController(IOrderAppService orderAppService) : Control
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
     {
-        try
-        {
-            await orderAppService.DeleteAsync(id, cancellationToken);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
-    }
-
-    private static ValidationProblemDetails ToValidationProblemDetails(ValidationException exception)
-    {
-        var errors = exception.Errors
-            .GroupBy(error => error.PropertyName)
-            .ToDictionary(
-                group => group.Key,
-                group => group.Select(error => error.ErrorMessage).Distinct().ToArray());
-
-        return new ValidationProblemDetails(errors)
-        {
-            Status = StatusCodes.Status422UnprocessableEntity,
-            Title = "One or more validation errors occurred."
-        };
+        await orderAppService.DeleteAsync(id, cancellationToken);
+        return NoContent();
     }
 }

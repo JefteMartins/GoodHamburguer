@@ -16,7 +16,24 @@ public sealed class SystemController : ControllerBase
         {
             service = "GoodHamburguer.Api",
             version = "v1",
-            status = "foundation-ready"
+            status = "phase-8-ready"
         });
+    }
+
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [HttpGet("test/known-exception")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult ThrowKnownException()
+    {
+        throw new KeyNotFoundException("Integration test known exception.");
+    }
+
+    [ApiExplorerSettings(IgnoreApi = true)]
+    [HttpGet("test/unknown-exception")]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    public IActionResult ThrowUnknownException()
+    {
+        throw new InvalidOperationException("Integration test unknown exception.");
     }
 }
