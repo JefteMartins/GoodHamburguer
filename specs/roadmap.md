@@ -72,7 +72,7 @@ Objetivo: aplicar corretamente as regras do desafio.
 - cobrir com testes unitarios edge cases
 - cobrir com testes unitarios cenarios invalidos relevantes
 
-## Fase 7 - CRUD de Pedidos
+## Fase 7 - CRUD de Pedidos [Concluida]
 
 Objetivo: entregar os endpoints principais.
 

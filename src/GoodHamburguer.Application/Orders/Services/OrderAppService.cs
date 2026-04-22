@@ -21,7 +21,27 @@ public sealed class OrderAppService(
         await orderRepository.AddAsync(order, cancellationToken);
 
         var menuCatalog = await menuQueryService.GetMenuCatalogAsync(cancellationToken);
-        return Map(order, menuCatalog);
+        return Map(order, menuCatalog.Items.ToDictionary(item => item.Code, StringComparer.OrdinalIgnoreCase));
+    }
+
+    public async Task<IReadOnlyList<OrderResponse>> ListAsync(CancellationToken cancellationToken = default)
+    {
+        var orders = await orderRepository.ListAsync(cancellationToken);
+        var menuCatalog = await menuQueryService.GetMenuCatalogAsync(cancellationToken);
+        var menuItemsByCode = menuCatalog.Items.ToDictionary(item => item.Code, StringComparer.OrdinalIgnoreCase);
+
+        return orders
+            .Select(order => Map(order, menuItemsByCode))
+            .ToArray();
+    }
+
+    public async Task<OrderResponse> GetByIdAsync(Guid orderId, CancellationToken cancellationToken = default)
+    {
+        var order = await orderRepository.GetByIdAsync(orderId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Order '{orderId}' was not found.");
+
+        var menuCatalog = await menuQueryService.GetMenuCatalogAsync(cancellationToken);
+        return Map(order, menuCatalog.Items.ToDictionary(item => item.Code, StringComparer.OrdinalIgnoreCase));
     }
 
     public async Task<OrderResponse> UpdateAsync(Guid orderId, UpdateOrderRequest request, CancellationToken cancellationToken = default)
@@ -35,13 +55,23 @@ public sealed class OrderAppService(
         await orderRepository.UpdateAsync(order, cancellationToken);
 
         var menuCatalog = await menuQueryService.GetMenuCatalogAsync(cancellationToken);
-        return Map(order, menuCatalog);
+        return Map(order, menuCatalog.Items.ToDictionary(item => item.Code, StringComparer.OrdinalIgnoreCase));
     }
 
-    private static OrderResponse Map(Domain.Orders.Order order, MenuCatalog menuCatalog)
+    public async Task DeleteAsync(Guid orderId, CancellationToken cancellationToken = default)
     {
-        var pricing = order.CalculatePricing(
-            menuCatalog.Items.ToDictionary(item => item.Code, StringComparer.OrdinalIgnoreCase));
+        var wasDeleted = await orderRepository.DeleteAsync(orderId, cancellationToken);
+        if (!wasDeleted)
+        {
+            throw new KeyNotFoundException($"Order '{orderId}' was not found.");
+        }
+    }
+
+    private static OrderResponse Map(
+        Domain.Orders.Order order,
+        IReadOnlyDictionary<string, MenuItem> menuItemsByCode)
+    {
+        var pricing = order.CalculatePricing(menuItemsByCode);
 
         return new OrderResponse
         {
