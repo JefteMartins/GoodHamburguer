@@ -150,7 +150,7 @@ Objetivo: aumentar o valor da entrega se houver tempo.
 - expandir a pipeline de CI com verificacoes adicionais
 - aprofundar metricas e traces
 
-## Fase 14 - Persistencia de Logs Operacionais
+## Fase 14 - Persistencia de Logs Operacionais [Concluida]
 
 Objetivo: registrar historico operacional da API em banco para auditoria e rastreabilidade de falhas.
 

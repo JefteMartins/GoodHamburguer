@@ -1,3 +1,6 @@
+using GoodHamburguer.Api.OperationalLogs;
+using GoodHamburguer.Application.OperationalLogs.Contracts;
+using GoodHamburguer.Application.OperationalLogs.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -5,11 +8,12 @@ namespace GoodHamburguer.Api.Exceptions;
 
 public sealed class GlobalExceptionFilter(
     IEnumerable<IExceptionProblemDetailsMapper> mappers,
-    ILogger<GlobalExceptionFilter> logger) : IExceptionFilter
+    IOperationalLogService operationalLogService,
+    ILogger<GlobalExceptionFilter> logger) : IAsyncExceptionFilter
 {
     private readonly IReadOnlyList<IExceptionProblemDetailsMapper> _mappers = mappers.ToArray();
 
-    public void OnException(ExceptionContext context)
+    public async Task OnExceptionAsync(ExceptionContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
 
@@ -30,6 +34,32 @@ public sealed class GlobalExceptionFilter(
             StatusCode = problemDetails.Status
         };
         context.ExceptionHandled = true;
+
+        var payload = context.HttpContext.Items.TryGetValue(OperationalLoggingHttpContextKeys.RequestPayload, out var payloadObject)
+            ? payloadObject as string ?? "{}"
+            : "{}";
+
+        try
+        {
+            await operationalLogService.RecordAsync(
+                new OperationalLogRecordRequest
+                {
+                    Type = OperationalLogType.Error,
+                    CreatedAtUtc = DateTimeOffset.UtcNow,
+                    Route = context.HttpContext.Request.Path.Value ?? "/",
+                    Method = context.HttpContext.Request.Method,
+                    CorrelationId = context.HttpContext.TraceIdentifier,
+                    Payload = payload,
+                    StatusCode = problemDetails.Status,
+                    ExceptionType = context.Exception.GetType().Name,
+                    ErrorMessage = context.Exception.Message
+                },
+                context.HttpContext.RequestAborted);
+        }
+        catch (Exception logException)
+        {
+            logger.LogWarning(logException, "Failed to persist error operational log for {Path}.", context.HttpContext.Request.Path);
+        }
     }
 
     private IExceptionProblemDetailsMapper? ResolveMapper(Exception exception)

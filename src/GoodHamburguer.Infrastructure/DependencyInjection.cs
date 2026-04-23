@@ -1,9 +1,11 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using GoodHamburguer.Application.Menu.Abstractions;
+using GoodHamburguer.Application.OperationalLogs.Abstractions;
 using GoodHamburguer.Application.Orders.Abstractions;
 using GoodHamburguer.Infrastructure.Configuration;
 using GoodHamburguer.Infrastructure.Menu;
+using GoodHamburguer.Infrastructure.OperationalLogs;
 using GoodHamburguer.Infrastructure.Orders;
 using GoodHamburguer.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -49,6 +51,7 @@ public static class DependencyInjection
 
         services.AddScoped<IMenuQueryService, PersistedMenuQueryService>();
         services.AddScoped<IOrderRepository, OrderRepository>();
+        services.AddScoped<IOperationalLogRepository, OperationalLogRepository>();
         services.AddScoped<IDatabaseInitializer, GoodHamburguerDbInitializer>();
 
         return services;
