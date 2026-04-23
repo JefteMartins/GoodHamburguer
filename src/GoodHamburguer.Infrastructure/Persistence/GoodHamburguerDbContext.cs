@@ -15,9 +15,12 @@ public sealed class GoodHamburguerDbContext : DbContext
 
     public DbSet<OrderEntity> Orders => Set<OrderEntity>();
 
+    public DbSet<OperationalLogEntity> OperationalLogs => Set<OperationalLogEntity>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfiguration(new MenuItemEntityTypeConfiguration());
         modelBuilder.ApplyConfiguration(new OrderEntityTypeConfiguration());
+        modelBuilder.ApplyConfiguration(new OperationalLogEntityTypeConfiguration());
     }
 }
