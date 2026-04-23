@@ -8,7 +8,8 @@ public sealed class MenuApiClient(IHttpClientFactory httpClientFactory) : IMenuA
     public async Task<IReadOnlyList<MenuCategoryDto>> GetMenuAsync(CancellationToken cancellationToken = default)
     {
         var client = httpClientFactory.CreateClient(Program.ApiHttpClientName);
-        using var response = await client.GetAsync("menu", cancellationToken);
+        var response = await client.GetAsync(new Uri("menu", UriKind.Relative), cancellationToken);
+
         response.EnsureSuccessStatusCode();
 
         if (response.Content.Headers.ContentLength is 0)

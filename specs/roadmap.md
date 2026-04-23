@@ -130,7 +130,7 @@ Objetivo: consolidar a confianca tecnica da entrega.
 - perseguir cobertura minima de 70%
 - revisar cenarios de happy path, edge cases e falhas relevantes
 
-## Fase 12 - Qualidade Operacional e Documentacao
+## Fase 12 - Qualidade Operacional e Documentacao [Concluida]
 
 Objetivo: deixar a entrega mais robusta e apresentavel.
 
@@ -141,7 +141,7 @@ Objetivo: deixar a entrega mais robusta e apresentavel.
 - complementar README com decisoes de arquitetura e limites da solucao
 - revisar e refinar a pipeline de CI, se necessario
 
-## Fase 13 - Melhorias Incrementais
+## Fase 13 - Melhorias Incrementais [Concluida]
 
 Objetivo: aumentar o valor da entrega se houver tempo.
 

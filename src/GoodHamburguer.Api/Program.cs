@@ -4,12 +4,14 @@ using GoodHamburguer.Api.Exceptions;
 using GoodHamburguer.Api.HealthChecks;
 using GoodHamburguer.Api.Swagger;
 using GoodHamburguer.Application;
+using GoodHamburguer.Application.Common.Telemetry;
 using GoodHamburguer.Infrastructure;
 using GoodHamburguer.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
@@ -63,6 +65,11 @@ public class Program
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService("GoodHamburguer.Api"))
             .WithTracing(tracing => tracing
+                .AddSource(ApplicationTelemetry.ServiceName)
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation())
+            .WithMetrics(metrics => metrics
+                .AddMeter(ApplicationTelemetry.ServiceName)
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation());
 

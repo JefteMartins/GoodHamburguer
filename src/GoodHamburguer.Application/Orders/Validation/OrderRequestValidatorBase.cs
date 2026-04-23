@@ -13,9 +13,14 @@ public abstract class OrderRequestValidatorBase<T> : AbstractValidator<T>
             {
                 var menuCatalog = await menuQueryService.GetMenuCatalogAsync(cancellationToken);
 
-                ValidateSlot(GetSandwichItemCode(request), MenuCategory.Sandwiches, "sandwichItemCode", menuCatalog, context);
-                ValidateSlot(GetSideItemCode(request), MenuCategory.Sides, "sideItemCode", menuCatalog, context);
-                ValidateSlot(GetDrinkItemCode(request), MenuCategory.Drinks, "drinkItemCode", menuCatalog, context);
+                var sandwichItemCode = GetSandwichItemCode(request);
+                var sideItemCode = GetSideItemCode(request);
+                var drinkItemCode = GetDrinkItemCode(request);
+
+                ValidateSlot(sandwichItemCode, MenuCategory.Sandwiches, "sandwichItemCode", menuCatalog, context);
+                ValidateSlot(sideItemCode, MenuCategory.Sides, "sideItemCode", menuCatalog, context);
+                ValidateSlot(drinkItemCode, MenuCategory.Drinks, "drinkItemCode", menuCatalog, context);
+                ValidateDistinctSelections(sandwichItemCode, sideItemCode, drinkItemCode, context);
             });
     }
 
@@ -24,6 +29,23 @@ public abstract class OrderRequestValidatorBase<T> : AbstractValidator<T>
     protected abstract string? GetSideItemCode(T request);
 
     protected abstract string? GetDrinkItemCode(T request);
+
+    private static void ValidateDistinctSelections(
+        string? sandwichItemCode,
+        string? sideItemCode,
+        string? drinkItemCode,
+        ValidationContext<T> context)
+    {
+        var selections = new[] { sandwichItemCode, sideItemCode, drinkItemCode }
+            .Where(itemCode => !string.IsNullOrWhiteSpace(itemCode))
+            .Select(itemCode => itemCode!.Trim())
+            .ToArray();
+
+        if (selections.Distinct(StringComparer.OrdinalIgnoreCase).Count() != selections.Length)
+        {
+            context.AddFailure("Order selections cannot repeat the same menu item across categories.");
+        }
+    }
 
     private static void ValidateSlot(
         string? itemCode,
