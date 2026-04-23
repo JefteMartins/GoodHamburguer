@@ -1,0 +1,147 @@
+.menu-page {
+    display: grid;
+    gap: 1.75rem;
+}
+
+.menu-hero {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1.8fr) minmax(18rem, 0.9fr);
+    padding: 2rem;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at top right, rgba(255, 179, 176, 0.18), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(254, 183, 0, 0.12), transparent 34%),
+        linear-gradient(135deg, rgba(30, 32, 32, 0.98) 0%, rgba(18, 20, 20, 0.98) 100%);
+}
+
+.menu-hero-pulse {
+    display: grid;
+    align-content: end;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border: 1px solid rgba(255, 179, 176, 0.16);
+    border-radius: var(--radius-xl);
+    background: rgba(12, 15, 15, 0.72);
+}
+
+.menu-hero h1 {
+    margin: 0.6rem 0 0.75rem;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    line-height: 1.04;
+}
+
+.menu-hero-pulse strong {
+    font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.menu-hero-pulse p {
+    margin: 0;
+    color: var(--color-on-surface-muted);
+    line-height: 1.6;
+}
+
+.menu-grid {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: repeat(auto-fit, minmax(19rem, 1fr));
+}
+
+.menu-card {
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background:
+        linear-gradient(180deg, rgba(51, 53, 53, 0.22), rgba(30, 32, 32, 0.95)),
+        var(--color-surface);
+    box-shadow: var(--color-shadow);
+}
+
+.menu-card-header h2,
+.menu-state h2 {
+    margin: 0.45rem 0 0;
+}
+
+.menu-items {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+}
+
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(170, 137, 135, 0.14);
+}
+
+.menu-item:first-child {
+    border-top: none;
+    padding-top: 0;
+}
+
+.menu-item h3,
+.menu-item p {
+    margin: 0;
+}
+
+.menu-item h3 {
+    font-size: 1rem;
+}
+
+.menu-item p {
+    color: var(--color-on-surface-muted);
+    font-size: 0.85rem;
+}
+
+.menu-item strong {
+    color: var(--color-secondary);
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 4.75rem;
+    padding: 0.4rem 0.65rem;
+    border: 1px solid rgba(255, 219, 157, 0.16);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 183, 0, 0.08);
+    font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    font-size: 1rem;
+}
+
+.menu-state {
+    padding: 1.75rem;
+}
+
+.menu-state p {
+    margin: 0.5rem 0 0;
+    color: var(--color-on-surface-muted);
+}
+
+.menu-state-loading {
+    background:
+        radial-gradient(circle at top right, rgba(255, 179, 176, 0.1), transparent 30%),
+        linear-gradient(135deg, rgba(30, 32, 32, 0.98), rgba(18, 20, 20, 0.98));
+}
+
+.menu-state-error {
+    border-color: rgba(255, 180, 171, 0.28);
+    background:
+        radial-gradient(circle at top right, rgba(255, 180, 171, 0.16), transparent 32%),
+        linear-gradient(135deg, rgba(74, 16, 22, 0.82), rgba(30, 32, 32, 0.96));
+}
+
+@media (max-width: 640.98px) {
+    .menu-hero {
+        grid-template-columns: 1fr;
+        padding: 1.35rem;
+    }
+
+    .menu-card,
+    .menu-state {
+        padding: 1.25rem;
+    }
+}

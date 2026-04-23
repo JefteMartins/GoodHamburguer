@@ -10,6 +10,7 @@ Como o desafio pede C# com .NET / ASP.NET Core, a stack deve privilegiar produti
 - Linguagem: C# 14
 - API: ASP.NET Core Web API com Controllers
 - Frontend: Blazor Web App com Interactive Server
+- Fonte de design do frontend: Google Stitch via MCP (projeto `9060755920845036151`)
 - ORM: Entity Framework Core
 - Banco de dados: MySQL 8.4
 - Documentacao de endpoints: Swagger / OpenAPI
@@ -59,6 +60,30 @@ Docker deve entrar desde a primeira fase para que qualquer avaliador consiga sub
 - estrutura pronta para receber um servico de migracao no `docker-compose`
 
 O servico de migracao, reutilizando a imagem da aplicacao para executar migrations e seed, deve entrar junto com a fase de persistencia real. Nesse momento, ele sera responsavel por aplicar as migrations e preparar o seed inicial de demonstracao, incluindo cardapio e alguns pedidos de exemplo.
+
+### Estrategia de Frontend com Stitch
+
+O Stitch sera usado como referencia de produto e design, nao como dependencia de runtime da aplicacao. O fluxo esperado para fase de frontend e:
+
+- listar telas do projeto Stitch por MCP
+- definir mapeamento tela -> rota Blazor
+- extrair diretrizes visuais (layout, componentes, tokens)
+- implementar componentes e paginas Razor equivalentes
+- validar aderencia visual e funcional sem acoplar o frontend ao Stitch em producao
+
+Projeto Stitch de referencia:
+
+- `projectId`: `9060755920845036151`
+- telas:
+  - `Orders Dashboard`
+  - `New Order`
+  - `Order Details`
+  - `Product Menu`
+
+Restricao importante:
+
+- nao introduzir chamadas ao MCP Stitch em runtime do frontend
+- preservar o Stitch apenas como insumo de planejamento e implementacao
 
 ### Modelagem de Pedido
 

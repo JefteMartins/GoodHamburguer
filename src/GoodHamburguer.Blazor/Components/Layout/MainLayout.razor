@@ -1,16 +1,23 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
-<div class="page">
-    <div class="sidebar">
+<div class="app-shell">
+    <aside class="sidebar">
         <NavMenu />
-    </div>
+    </aside>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+    <main class="app-main">
+        <header class="app-topbar">
+            <div>
+                <p class="app-topbar-kicker">Kitchen control layer</p>
+                <strong>GoodHamburguer Operations</strong>
+            </div>
+            <div class="app-topbar-status">
+                <span class="app-topbar-indicator" aria-hidden="true"></span>
+                <span>API v1 online</span>
+            </div>
+        </header>
 
-        <article class="content px-4">
+        <article class="content-shell">
             @Body
         </article>
     </main>
@@ -19,5 +26,5 @@
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+    <span class="dismiss">x</span>
 </div>

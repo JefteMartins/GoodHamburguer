@@ -1,0 +1,113 @@
+@page "/menu"
+@using System.Globalization
+@using GoodHamburguer.Blazor.Services.Api.Menu
+@inject IMenuApiClient MenuApiClient
+
+<PageTitle>Menu | GoodHamburguer</PageTitle>
+
+<section class="menu-page">
+    <header class="menu-hero surface-panel">
+        <div>
+            <p class="menu-kicker section-kicker">Product Menu</p>
+            <h1>Build a better burger order</h1>
+            <p class="menu-summary section-summary">
+                Browse the live menu categories served by the GoodHamburguer API and use them as the starting point for new orders.
+            </p>
+        </div>
+
+        <div class="menu-hero-pulse">
+            <span class="pill">Kitchen menu live</span>
+            <strong>@ItemCount items ready</strong>
+            <p>@CategoryCount categories synchronized with the API.</p>
+        </div>
+    </header>
+
+    <section class="metric-grid">
+        <article class="metric-card">
+            <span>Categories</span>
+            <strong>@CategoryCount</strong>
+        </article>
+        <article class="metric-card">
+            <span>Items</span>
+            <strong>@ItemCount</strong>
+        </article>
+        <article class="metric-card">
+            <span>Primary CTA</span>
+            <strong>Create order</strong>
+        </article>
+    </section>
+
+    @if (isLoading)
+    {
+        <section class="menu-state menu-state-loading surface-panel" aria-live="polite">
+            <p>Loading menu...</p>
+        </section>
+    }
+    else if (errorMessage is not null)
+    {
+        <section class="menu-state menu-state-error surface-panel" aria-live="polite">
+            <h2>Menu unavailable</h2>
+            <p>@errorMessage</p>
+        </section>
+    }
+    else if (!HasItems)
+    {
+        <section class="menu-state menu-state-empty surface-panel" aria-live="polite">
+            <h2>Nothing to show yet</h2>
+            <p>No menu items are available right now.</p>
+        </section>
+    }
+    else
+    {
+        <section class="menu-grid">
+            @foreach (var category in categories.Where(category => category.Items.Count > 0))
+            {
+                <article class="menu-card">
+                    <header class="menu-card-header">
+                        <p class="menu-card-code section-kicker">@category.Code</p>
+                        <h2>@category.DisplayName</h2>
+                    </header>
+
+                    <ul class="menu-items">
+                        @foreach (var item in category.Items)
+                        {
+                            <li class="menu-item">
+                                <div>
+                                    <h3>@item.Name</h3>
+                                    <p>@item.Code</p>
+                                </div>
+                                <strong>@item.Price.ToString("0.00", CultureInfo.InvariantCulture)</strong>
+                            </li>
+                        }
+                    </ul>
+                </article>
+            }
+        </section>
+    }
+</section>
+
+@code {
+    private IReadOnlyList<MenuCategoryDto> categories = [];
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    private bool HasItems => categories.Any(category => category.Items.Count > 0);
+    private int CategoryCount => categories.Count(category => category.Items.Count > 0);
+    private int ItemCount => categories.Sum(category => category.Items.Count);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            categories = await MenuApiClient.GetMenuAsync();
+        }
+        catch (Exception)
+        {
+            errorMessage = "We couldn't load the menu right now. Please try again in a moment.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

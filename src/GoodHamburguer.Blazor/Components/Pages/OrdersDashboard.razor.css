@@ -1,0 +1,111 @@
+.orders-dashboard-page {
+    display: grid;
+    gap: 1.75rem;
+}
+
+.orders-dashboard-hero {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1.8fr) minmax(18rem, 0.9fr);
+    padding: 2rem;
+    background:
+        radial-gradient(circle at top right, rgba(255, 179, 176, 0.18), transparent 26%),
+        radial-gradient(circle at bottom left, rgba(254, 183, 0, 0.1), transparent 32%),
+        linear-gradient(135deg, rgba(30, 32, 32, 0.98), rgba(18, 20, 20, 0.98));
+}
+
+.orders-dashboard-hero h1 {
+    margin: 0.6rem 0 0.75rem;
+    font-size: clamp(2.3rem, 4vw, 4rem);
+}
+
+.orders-dashboard-spotlight {
+    display: grid;
+    align-content: end;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border: 1px solid rgba(170, 137, 135, 0.18);
+    border-radius: var(--radius-xl);
+    background: rgba(12, 15, 15, 0.72);
+}
+
+.orders-dashboard-spotlight strong {
+    font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    font-size: 1.95rem;
+}
+
+.orders-dashboard-spotlight p {
+    margin: 0;
+    color: var(--color-on-surface-muted);
+    line-height: 1.6;
+}
+
+.orders-dashboard-state,
+.orders-dashboard-card {
+    padding: 1.5rem;
+}
+
+.orders-dashboard-state-error {
+    border-color: rgba(255, 180, 171, 0.28);
+    background:
+        radial-gradient(circle at top right, rgba(255, 180, 171, 0.16), transparent 32%),
+        linear-gradient(135deg, rgba(74, 16, 22, 0.82), rgba(30, 32, 32, 0.96));
+}
+
+.orders-dashboard-list {
+    display: grid;
+    gap: 1.15rem;
+}
+
+.orders-dashboard-card {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background:
+        linear-gradient(180deg, rgba(51, 53, 53, 0.22), rgba(30, 32, 32, 0.95)),
+        var(--color-surface);
+    box-shadow: var(--color-shadow);
+}
+
+.orders-dashboard-card header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.orders-dashboard-card header h2 {
+    margin: 0.45rem 0 0;
+    font-size: 1.1rem;
+}
+
+.orders-dashboard-card header p {
+    margin: 0.35rem 0 0;
+    color: var(--color-on-surface-muted);
+}
+
+.orders-dashboard-summary {
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+    margin: 1rem 0;
+}
+
+.orders-dashboard-summary div {
+    min-height: 100%;
+}
+
+.orders-dashboard-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 880px) {
+    .orders-dashboard-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .orders-dashboard-card header {
+        flex-direction: column;
+    }
+}
