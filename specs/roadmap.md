@@ -130,7 +130,7 @@ Objetivo: consolidar a confianca tecnica da entrega.
 - perseguir cobertura minima de 70%
 - revisar cenarios de happy path, edge cases e falhas relevantes
 
-## Fase 12 - Qualidade Operacional e Documentacao
+## Fase 12 - Qualidade Operacional e Documentacao [Concluida]
 
 Objetivo: deixar a entrega mais robusta e apresentavel.
 
@@ -149,6 +149,19 @@ Objetivo: aumentar o valor da entrega se houver tempo.
 - enriquecer a experiencia visual do Blazor
 - expandir a pipeline de CI com verificacoes adicionais
 - aprofundar metricas e traces
+
+## Fase 14 - Persistencia de Logs Operacionais
+
+Objetivo: registrar historico operacional da API em banco para auditoria e rastreabilidade de falhas.
+
+- criar tabela unica de logs no MySQL
+- adicionar coluna `type` para distinguir:
+- `application`: execucoes normais com parametros utilizados
+- `error`: falhas e excecoes para rastreio de problemas
+- armazenar payload de parametros de entrada de forma estruturada
+- registrar contexto minimo de rastreabilidade (data/hora, rota e correlacao)
+- criar estrategia de consulta para investigacao por periodo e por tipo
+- adicionar testes cobrindo persistencia de logs normais e logs de erro
 
 ## Definicao de Pronto da Primeira Entrega
 

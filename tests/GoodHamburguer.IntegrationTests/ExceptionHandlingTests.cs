@@ -42,7 +42,26 @@ public sealed class ExceptionHandlingTests : IClassFixture<MySqlWebApplicationFa
         problem.Title.Should().NotBeNullOrWhiteSpace();
     }
 
-    public sealed class ProblemDetailsContract
+    [Fact]
+    public async Task ValidationException_ShouldReturnValidationProblemDetails_WithInstanceAndErrors()
+    {
+        var response = await _client.PostAsJsonAsync("/api/v1/orders", new
+        {
+            sandwichItemCode = "sandwich-does-not-exist"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+
+        var problem = await response.Content.ReadFromJsonAsync<ValidationProblemContract>();
+
+        problem.Should().NotBeNull();
+        problem!.Type.Should().Be("https://httpstatuses.com/422");
+        problem.Title.Should().Be("One or more validation errors occurred.");
+        problem.Instance.Should().Be("/api/v1/orders");
+        problem.Errors.Should().ContainKey("sandwichItemCode");
+    }
+
+    public class ProblemDetailsContract
     {
         public string? Type { get; init; }
 
@@ -51,5 +70,12 @@ public sealed class ExceptionHandlingTests : IClassFixture<MySqlWebApplicationFa
         public int? Status { get; init; }
 
         public string? Detail { get; init; }
+    }
+
+    public sealed class ValidationProblemContract : ProblemDetailsContract
+    {
+        public required IDictionary<string, string[]> Errors { get; init; }
+
+        public string? Instance { get; init; }
     }
 }

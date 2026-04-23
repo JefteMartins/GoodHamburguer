@@ -15,6 +15,20 @@ O objetivo deste repositorio e entregar uma solucao completa em .NET para regist
 
 Nesta etapa, o projeto ja persiste catalogo e pedidos em MySQL, com migration inicial, seed idempotente e servico dedicado de migracao no ambiente Docker.
 
+## Contratos HTTP Principais
+
+Rotas principais da API `v1`:
+
+- `GET /api/v1/menu`: retorna o cardapio agrupado por categoria
+- `GET /api/v1/orders`: lista pedidos persistidos
+- `GET /api/v1/orders/{id}`: consulta um pedido existente
+- `POST /api/v1/orders`: cria um pedido e retorna `201 Created`
+- `PUT /api/v1/orders/{id}`: atualiza um pedido existente
+- `DELETE /api/v1/orders/{id}`: remove um pedido e retorna `204 No Content`
+
+Erros de validacao usam `422 Unprocessable Entity` com `ValidationProblemDetails`.
+Recursos inexistentes retornam `404 Not Found` com `ProblemDetails`.
+
 ## Arquitetura
 
 O projeto segue uma base de Clean Architecture com DDD pragmatico, organizada em:
@@ -33,6 +47,13 @@ O projeto segue uma base de Clean Architecture com DDD pragmatico, organizada em
   Testes unitarios.
 - `tests/GoodHamburguer.IntegrationTests`
   Testes de integracao.
+
+## Decisoes de Arquitetura
+
+- Clean Architecture com DDD pragmatico para separar dominio, aplicacao, infraestrutura e entrega HTTP sem cerimonia excessiva.
+- Regras de subtotal, desconto e total permanecem no dominio para manter a camada HTTP fina e previsivel.
+- MySQL real e migrations entram na primeira entrega para aproximar o projeto de um cenario de avaliacao mais realista.
+- O frontend Blazor consome a API `v1`, mas o Stitch permanece apenas como referencia de design e planejamento.
 
 ## Estrutura de Pastas
 
@@ -119,6 +140,31 @@ Nesta etapa, a solution entrega:
 - migration inicial e seed idempotente
 - servico dedicado de migration no `docker-compose`
 - testes de integracao com MySQL real via Testcontainers
+
+## Exemplo de Erro
+
+Exemplo resumido de resposta para payload invalido:
+
+```json
+{
+  "type": "https://httpstatuses.com/422",
+  "title": "One or more validation errors occurred.",
+  "status": 422,
+  "detail": "The request payload contains invalid values.",
+  "instance": "/api/v1/orders",
+  "errors": {
+    "sandwichItemCode": [
+      "The informed item code does not exist in the menu."
+    ]
+  }
+}
+```
+
+## Limites Conhecidos
+
+- a primeira entrega nao cobre autenticacao, pagamento, estoque ou multiunidade
+- o pedido continua limitado a no maximo um item por categoria principal
+- a observabilidade desta versao e propositalmente basica, com logs estruturados, traces iniciais e health checks
 
 ## Roadmap Resumido
 

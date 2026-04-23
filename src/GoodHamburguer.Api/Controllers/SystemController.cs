@@ -16,7 +16,7 @@ public sealed class SystemController : ControllerBase
         {
             service = "GoodHamburguer.Api",
             version = "v1",
-            status = "phase-8-ready"
+            status = "phase-12-ready"
         });
     }
 

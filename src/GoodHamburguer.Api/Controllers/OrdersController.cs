@@ -18,7 +18,7 @@ public sealed class OrdersController(IOrderAppService orderAppService) : Control
         return Ok(orders);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:guid}", Name = nameof(GetById))]
     [ProducesResponseType<OrderResponse>(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<OrderResponse>> GetById(Guid id, CancellationToken cancellationToken)
@@ -28,14 +28,14 @@ public sealed class OrdersController(IOrderAppService orderAppService) : Control
     }
 
     [HttpPost]
-    [ProducesResponseType<OrderResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<OrderResponse>(StatusCodes.Status201Created)]
     [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status422UnprocessableEntity)]
     public async Task<ActionResult<OrderResponse>> Create(
         [FromBody] CreateOrderRequest request,
         CancellationToken cancellationToken)
     {
         var order = await orderAppService.CreateAsync(request, cancellationToken);
-        return Ok(order);
+        return CreatedAtAction(nameof(GetById), new { id = order.Id, version = "1" }, order);
     }
 
     [HttpPut("{id:guid}")]
