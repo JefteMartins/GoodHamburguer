@@ -1,0 +1,19 @@
+@namespace GoodHamburguer.Blazor.Components.UI
+
+<div class="empty-state surface-panel">
+    <div class="empty-icon">∅</div>
+    <h2>@Title</h2>
+    <p>@Message</p>
+    @if (ChildContent is not null)
+    {
+        <div class="empty-state-actions">
+            @ChildContent
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Nothing here yet";
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

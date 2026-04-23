@@ -3,7 +3,7 @@ namespace GoodHamburguer.Domain.Menu;
 public sealed class MenuCatalog
 {
     private readonly IReadOnlyCollection<MenuItem> _items;
-    private readonly IReadOnlyDictionary<string, MenuItem> _itemsByCode;
+    private readonly Dictionary<string, MenuItem> _itemsByCode;
 
     public MenuCatalog(IEnumerable<MenuItem> items)
     {

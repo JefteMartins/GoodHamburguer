@@ -10,6 +10,9 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddApiIntegration(this IServiceCollection services, IConfiguration configuration)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
         services
             .AddOptions<ApiOptions>()
             .Bind(configuration.GetSection(ApiOptions.SectionName))

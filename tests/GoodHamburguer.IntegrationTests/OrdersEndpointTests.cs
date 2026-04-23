@@ -57,6 +57,37 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
     }
 
     [Fact]
+    public async Task Update_ShouldReturnValidationDetails_WhenPayloadHasDuplicateReuseAndWrongCategory()
+    {
+        var createResponse = await _client.PostAsJsonAsync("/api/v1/orders", new
+        {
+            sandwichItemCode = "sandwich-x-burger"
+        });
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var createdOrder = await createResponse.Content.ReadFromJsonAsync<OrderContract>();
+        createdOrder.Should().NotBeNull();
+
+        var updateResponse = await _client.PutAsJsonAsync($"/api/v1/orders/{createdOrder!.Id}", new
+        {
+            sandwichItemCode = "sandwich-x-burger",
+            sideItemCode = "sandwich-x-burger",
+            drinkItemCode = "drink-soft-drink"
+        });
+
+        updateResponse.StatusCode.Should().Be(HttpStatusCode.UnprocessableEntity);
+
+        var problem = await updateResponse.Content.ReadFromJsonAsync<ValidationProblemContract>();
+
+        problem.Should().NotBeNull();
+        problem!.Errors.Should().ContainKey("sideItemCode");
+        problem.Errors.SelectMany(entry => entry.Value)
+            .Should()
+            .Contain(message => message.Contains("repeat", StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
     public async Task CreateAndUpdate_ShouldAcceptValidItemCodes()
     {
         var createResponse = await _client.PostAsJsonAsync("/api/v1/orders", new

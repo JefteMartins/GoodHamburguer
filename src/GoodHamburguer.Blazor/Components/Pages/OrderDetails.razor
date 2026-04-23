@@ -24,24 +24,17 @@
 
     @if (isLoading)
     {
-        <section class="order-details-state surface-panel">
-            <p>Loading order...</p>
-        </section>
+        <LoadingState Text="Loading ticket details..." />
     }
     else if (loadErrorMessage is not null)
     {
-        <section class="order-details-state order-details-state-error surface-panel">
-            <h2>Order unavailable</h2>
-            <p>@loadErrorMessage</p>
-            <button type="button" class="btn btn-outline-secondary" @onclick="LoadAsync">Try again</button>
-        </section>
+        <ErrorState Title="Order unavailable" Message="@loadErrorMessage" OnRetry="LoadAsync" />
     }
     else if (isDeleted)
     {
-        <section class="order-details-state surface-panel">
-            <h2>Order deleted</h2>
-            <p>The order was removed successfully.</p>
-        </section>
+        <EmptyState Title="Order deleted" Message="The order was removed successfully.">
+            <a class="btn btn-primary" href="/dashboard/orders">Return to dashboard</a>
+        </EmptyState>
     }
     else
     {

@@ -67,6 +67,31 @@ public class OrderTests
     }
 
     [Fact]
+    public void UpdateItems_ShouldAllowClearingAllSelectionsWhilePreservingCreatedAtUtc()
+    {
+        var createdAt = new DateTimeOffset(2026, 4, 21, 12, 0, 0, TimeSpan.Zero);
+        var updatedAt = createdAt.AddMinutes(5);
+        var order = Order.Create(
+            Guid.NewGuid(),
+            sandwich: new OrderItemSelection("sandwich-x-burger"),
+            side: new OrderItemSelection("side-fries"),
+            drink: new OrderItemSelection("drink-soft-drink"),
+            createdAtUtc: createdAt);
+
+        order.UpdateItems(
+            sandwich: null,
+            side: null,
+            drink: null,
+            updatedAtUtc: updatedAt);
+
+        order.CreatedAtUtc.Should().Be(createdAt);
+        order.UpdatedAtUtc.Should().Be(updatedAt);
+        order.Sandwich.Should().BeNull();
+        order.Side.Should().BeNull();
+        order.Drink.Should().BeNull();
+    }
+
+    [Fact]
     public void CalculatePricing_ShouldReturnTwentyPercentDiscount_WhenOrderHasFullCombo()
     {
         var order = Order.Create(

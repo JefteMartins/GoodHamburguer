@@ -43,6 +43,21 @@ public class OrderRequestValidatorTests
         result.Errors.Should().ContainSingle(error => error.PropertyName == "sideItemCode");
     }
 
+    [Fact]
+    public async Task CreateValidator_ShouldRejectDuplicatedSelectionsAcrossCategories()
+    {
+        var validator = new CreateOrderRequestValidator(new StubMenuQueryService(Catalog));
+
+        var result = await validator.ValidateAsync(new CreateOrderRequest
+        {
+            SandwichItemCode = "sandwich-x-burger",
+            SideItemCode = "sandwich-x-burger"
+        });
+
+        result.IsValid.Should().BeFalse();
+        result.Errors.Should().Contain(error => error.ErrorMessage.Contains("repeat", StringComparison.OrdinalIgnoreCase));
+    }
+
     private sealed class StubMenuQueryService(MenuCatalog catalog) : IMenuQueryService
     {
         public Task<MenuCatalog> GetMenuCatalogAsync(CancellationToken cancellationToken = default)

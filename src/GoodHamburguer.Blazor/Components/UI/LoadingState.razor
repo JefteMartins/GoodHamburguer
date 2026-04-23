@@ -1,0 +1,10 @@
+@namespace GoodHamburguer.Blazor.Components.UI
+
+<div class="loading-state surface-panel">
+    <div class="loading-spinner"></div>
+    <p>@Text</p>
+</div>
+
+@code {
+    [Parameter] public string Text { get; set; } = "Loading...";
+}

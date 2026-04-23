@@ -10,7 +10,7 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
     public async Task<IReadOnlyList<OrderSummaryDto>> ListOrdersAsync(CancellationToken cancellationToken = default)
     {
         var client = httpClientFactory.CreateClient(Program.ApiHttpClientName);
-        using var response = await client.GetAsync("orders", cancellationToken);
+        using var response = await client.GetAsync(new Uri("orders", UriKind.Relative), cancellationToken);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -25,7 +25,7 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
         CancellationToken cancellationToken = default)
     {
         var client = httpClientFactory.CreateClient(Program.ApiHttpClientName);
-        using var response = await client.PostAsJsonAsync("orders", request, cancellationToken);
+        using var response = await client.PostAsJsonAsync(new Uri("orders", UriKind.Relative), request, cancellationToken);
 
         if (response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.UnprocessableEntity)
         {
@@ -40,7 +40,7 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
     public async Task<OrderSummaryDto> GetOrderByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var client = httpClientFactory.CreateClient(Program.ApiHttpClientName);
-        using var response = await client.GetAsync($"orders/{id}", cancellationToken);
+        using var response = await client.GetAsync(new Uri($"orders/{id}", UriKind.Relative), cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
@@ -58,7 +58,7 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
         CancellationToken cancellationToken = default)
     {
         var client = httpClientFactory.CreateClient(Program.ApiHttpClientName);
-        using var response = await client.PutAsJsonAsync($"orders/{id}", request, cancellationToken);
+        using var response = await client.PutAsJsonAsync(new Uri($"orders/{id}", UriKind.Relative), request, cancellationToken);
 
         if (response.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.UnprocessableEntity)
         {
@@ -78,7 +78,7 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
     public async Task DeleteOrderAsync(Guid id, CancellationToken cancellationToken = default)
     {
         var client = httpClientFactory.CreateClient(Program.ApiHttpClientName);
-        using var response = await client.DeleteAsync($"orders/{id}", cancellationToken);
+        using var response = await client.DeleteAsync(new Uri($"orders/{id}", UriKind.Relative), cancellationToken);
 
         if (response.StatusCode == HttpStatusCode.NotFound)
         {
