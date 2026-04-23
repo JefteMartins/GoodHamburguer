@@ -81,6 +81,70 @@ public class OrderApiClientTests
     }
 
     [Fact]
+    public async Task ListOrdersAsync_UsesFallbackMessage_WhenProblemDetailsPayloadCannotBeParsed()
+    {
+        var handler = new StubHttpMessageHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+            {
+                Content = new StringContent("plain-text-error")
+            }));
+
+        var services = new ServiceCollection();
+        services.AddHttpClient(Program.ApiHttpClientName, client => client.BaseAddress = new Uri("https://api.goodhamburguer.local/api/v1/"))
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddScoped<IOrderApiClient, OrderApiClient>();
+
+        await using var provider = services.BuildServiceProvider().CreateAsyncScope();
+        var sut = provider.ServiceProvider.GetRequiredService<IOrderApiClient>();
+
+        var act = () => sut.ListOrdersAsync();
+
+        var exception = await act.Should().ThrowAsync<OrderApiProblemException>();
+        exception.Which.Message.Should().Be("The order request could not be completed.");
+    }
+
+    [Fact]
+    public async Task ListOrdersAsync_ReturnsEmptyList_WhenApiReturnsNoContent()
+    {
+        var handler = new StubHttpMessageHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NoContent)));
+
+        var services = new ServiceCollection();
+        services.AddHttpClient(Program.ApiHttpClientName, client => client.BaseAddress = new Uri("https://api.goodhamburguer.local/api/v1/"))
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddScoped<IOrderApiClient, OrderApiClient>();
+
+        await using var provider = services.BuildServiceProvider().CreateAsyncScope();
+        var sut = provider.ServiceProvider.GetRequiredService<IOrderApiClient>();
+
+        var result = await sut.ListOrdersAsync();
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ListOrdersAsync_ReturnsEmptyList_WhenApiReturnsInvalidJson()
+    {
+        var handler = new StubHttpMessageHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{ invalid-json")
+            }));
+
+        var services = new ServiceCollection();
+        services.AddHttpClient(Program.ApiHttpClientName, client => client.BaseAddress = new Uri("https://api.goodhamburguer.local/api/v1/"))
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddScoped<IOrderApiClient, OrderApiClient>();
+
+        await using var provider = services.BuildServiceProvider().CreateAsyncScope();
+        var sut = provider.ServiceProvider.GetRequiredService<IOrderApiClient>();
+
+        var result = await sut.ListOrdersAsync();
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task CreateOrderAsync_ReturnsCreatedOrder()
     {
         HttpRequestMessage? capturedRequest = null;
@@ -204,6 +268,36 @@ public class OrderApiClientTests
     }
 
     [Fact]
+    public async Task CreateOrderAsync_UsesFallbackValidationMessage_WhenPayloadCannotBeParsed()
+    {
+        var handler = new StubHttpMessageHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.UnprocessableEntity)
+            {
+                Content = new StringContent("plain-text-error")
+            }));
+
+        var services = new ServiceCollection();
+        services.AddHttpClient(Program.ApiHttpClientName, client =>
+            {
+                client.BaseAddress = new Uri("https://api.goodhamburguer.local/api/v1/");
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddScoped<IOrderApiClient, OrderApiClient>();
+
+        await using var provider = services.BuildServiceProvider().CreateAsyncScope();
+        var sut = provider.ServiceProvider.GetRequiredService<IOrderApiClient>();
+
+        var act = () => sut.CreateOrderAsync(new CreateOrderRequestDto
+        {
+            SandwichItemCode = "sandwich-x-burger"
+        });
+
+        var exception = await act.Should().ThrowAsync<OrderApiValidationException>();
+        exception.Which.Message.Should().Be("The order request contains invalid values.");
+        exception.Which.Errors.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task GetOrderByIdAsync_ReturnsOrderDetails()
     {
         HttpRequestMessage? capturedRequest = null;
@@ -241,6 +335,54 @@ public class OrderApiClientTests
         result.Id.Should().Be(orderId);
         capturedRequest!.Method.Should().Be(HttpMethod.Get);
         capturedRequest.RequestUri!.ToString().Should().Be($"https://api.goodhamburguer.local/api/v1/orders/{orderId}");
+    }
+
+    [Fact]
+    public async Task GetOrderByIdAsync_ThrowsInvalidOperationException_WhenApiReturnsNoContent()
+    {
+        var orderId = Guid.Parse("23232323-2323-2323-2323-232323232323");
+        var handler = new StubHttpMessageHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(string.Empty)
+            }));
+
+        var services = new ServiceCollection();
+        services.AddHttpClient(Program.ApiHttpClientName, client => client.BaseAddress = new Uri("https://api.goodhamburguer.local/api/v1/"))
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddScoped<IOrderApiClient, OrderApiClient>();
+
+        await using var provider = services.BuildServiceProvider().CreateAsyncScope();
+        var sut = provider.ServiceProvider.GetRequiredService<IOrderApiClient>();
+
+        var act = () => sut.GetOrderByIdAsync(orderId);
+
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.Which.Message.Should().Be("The API returned an empty order payload.");
+    }
+
+    [Fact]
+    public async Task GetOrderByIdAsync_ThrowsInvalidOperationException_WhenApiReturnsInvalidJson()
+    {
+        var orderId = Guid.Parse("24242424-2424-2424-2424-242424242424");
+        var handler = new StubHttpMessageHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{ invalid-json")
+            }));
+
+        var services = new ServiceCollection();
+        services.AddHttpClient(Program.ApiHttpClientName, client => client.BaseAddress = new Uri("https://api.goodhamburguer.local/api/v1/"))
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddScoped<IOrderApiClient, OrderApiClient>();
+
+        await using var provider = services.BuildServiceProvider().CreateAsyncScope();
+        var sut = provider.ServiceProvider.GetRequiredService<IOrderApiClient>();
+
+        var act = () => sut.GetOrderByIdAsync(orderId);
+
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.Which.Message.Should().Be("The API returned an empty order payload.");
     }
 
     [Fact]
@@ -284,6 +426,60 @@ public class OrderApiClientTests
         result.SandwichItemCode.Should().Be("sandwich-x-egg");
         capturedRequest!.Method.Should().Be(HttpMethod.Put);
         capturedRequest.RequestUri!.ToString().Should().Be($"https://api.goodhamburguer.local/api/v1/orders/{orderId}");
+    }
+
+    [Fact]
+    public async Task UpdateOrderAsync_ThrowsInvalidOperationException_WhenApiReturnsNoContent()
+    {
+        var orderId = Guid.Parse("34343434-3434-3434-3434-343434343434");
+        var handler = new StubHttpMessageHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(string.Empty)
+            }));
+
+        var services = new ServiceCollection();
+        services.AddHttpClient(Program.ApiHttpClientName, client => client.BaseAddress = new Uri("https://api.goodhamburguer.local/api/v1/"))
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddScoped<IOrderApiClient, OrderApiClient>();
+
+        await using var provider = services.BuildServiceProvider().CreateAsyncScope();
+        var sut = provider.ServiceProvider.GetRequiredService<IOrderApiClient>();
+
+        var act = () => sut.UpdateOrderAsync(orderId, new UpdateOrderRequestDto
+        {
+            SandwichItemCode = "sandwich-x-burger"
+        });
+
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.Which.Message.Should().Be("The API returned an empty order payload.");
+    }
+
+    [Fact]
+    public async Task UpdateOrderAsync_ThrowsInvalidOperationException_WhenApiReturnsInvalidJson()
+    {
+        var orderId = Guid.Parse("35353535-3535-3535-3535-353535353535");
+        var handler = new StubHttpMessageHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{ invalid-json")
+            }));
+
+        var services = new ServiceCollection();
+        services.AddHttpClient(Program.ApiHttpClientName, client => client.BaseAddress = new Uri("https://api.goodhamburguer.local/api/v1/"))
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddScoped<IOrderApiClient, OrderApiClient>();
+
+        await using var provider = services.BuildServiceProvider().CreateAsyncScope();
+        var sut = provider.ServiceProvider.GetRequiredService<IOrderApiClient>();
+
+        var act = () => sut.UpdateOrderAsync(orderId, new UpdateOrderRequestDto
+        {
+            SandwichItemCode = "sandwich-x-burger"
+        });
+
+        var exception = await act.Should().ThrowAsync<InvalidOperationException>();
+        exception.Which.Message.Should().Be("The API returned an empty order payload.");
     }
 
     [Fact]

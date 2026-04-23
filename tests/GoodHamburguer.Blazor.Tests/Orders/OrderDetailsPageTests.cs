@@ -230,6 +230,341 @@ public class OrderDetailsPageTests : TestContext
         });
     }
 
+    [Fact]
+    public void OrderDetails_ShowsGenericLoadError_WhenMenuCannotBeLoaded()
+    {
+        var orderId = Guid.Parse("efefefef-efef-efef-efef-efefefefefef");
+
+        Services.AddSingleton<IMenuApiClient>(new StubMenuApiClient(() =>
+            Task.FromException<IReadOnlyList<MenuCategoryDto>>(new InvalidOperationException("menu failed"))));
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            GetById = _ => Task.FromResult(new OrderSummaryDto
+            {
+                Id = orderId,
+                SandwichItemCode = "sandwich-x-burger",
+                SideItemCode = null,
+                DrinkItemCode = null,
+                Subtotal = 12m,
+                Discount = 0m,
+                Total = 12m,
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+                UpdatedAtUtc = DateTimeOffset.UtcNow
+            })
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrderDetails>(
+            parameters => parameters.Add(page => page.Id, orderId));
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain("Order unavailable");
+            cut.Markup.Should().Contain("We couldn't load the order right now. Please try again in a moment.");
+        });
+    }
+
+    [Fact]
+    public void OrderDetails_ShowsNotFoundError_WhenDeleteReturnsNotFound()
+    {
+        var orderId = Guid.Parse("abababab-abab-abab-abab-abababababab");
+
+        Services.AddSingleton<IMenuApiClient>(new StubMenuApiClient(() => Task.FromResult<IReadOnlyList<MenuCategoryDto>>(
+        [
+            Category("sandwiches", "Sanduiches", ("sandwich-x-burger", "X-Burger"))
+        ])));
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            GetById = _ => Task.FromResult(new OrderSummaryDto
+            {
+                Id = orderId,
+                SandwichItemCode = "sandwich-x-burger",
+                SideItemCode = null,
+                DrinkItemCode = null,
+                Subtotal = 12m,
+                Discount = 0m,
+                Total = 12m,
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+                UpdatedAtUtc = DateTimeOffset.UtcNow
+            }),
+            Delete = _ => Task.FromException(new OrderApiNotFoundException("The requested order was not found."))
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrderDetails>(
+            parameters => parameters.Add(page => page.Id, orderId));
+
+        cut.WaitForAssertion(() => cut.Find("#delete-order"));
+        cut.Find("#delete-order").Click();
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain("The requested order was not found.");
+            cut.Markup.Should().NotContain("Order deleted");
+        });
+    }
+
+    [Fact]
+    public void OrderDetails_ShowsValidationErrors_WhenUpdateReturnsValidationProblem()
+    {
+        var orderId = Guid.Parse("bcbcbcbc-bcbc-bcbc-bcbc-bcbcbcbcbcbc");
+
+        Services.AddSingleton<IMenuApiClient>(new StubMenuApiClient(() => Task.FromResult<IReadOnlyList<MenuCategoryDto>>(
+        [
+            Category("sandwiches", "Sanduiches", ("sandwich-x-burger", "X-Burger"))
+        ])));
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            GetById = _ => Task.FromResult(new OrderSummaryDto
+            {
+                Id = orderId,
+                SandwichItemCode = "sandwich-x-burger",
+                SideItemCode = null,
+                DrinkItemCode = null,
+                Subtotal = 12m,
+                Discount = 0m,
+                Total = 12m,
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+                UpdatedAtUtc = DateTimeOffset.UtcNow
+            }),
+            Update = (_, _) => Task.FromException<OrderSummaryDto>(new OrderApiValidationException(
+                new Dictionary<string, string[]>
+                {
+                    ["sideItemCode"] = ["The item code 'bad-side' was not found in the menu."]
+                },
+                "The order request contains invalid values."))
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrderDetails>(
+            parameters => parameters.Add(page => page.Id, orderId));
+
+        cut.WaitForAssertion(() => cut.Find("form"));
+        cut.Find("form").Submit();
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain("The order request contains invalid values.");
+            cut.Markup.Should().Contain("sideItemCode: The item code 'bad-side' was not found in the menu.");
+        });
+    }
+
+    [Fact]
+    public void OrderDetails_ShowsGenericDeleteError_WhenDeleteFailsUnexpectedly()
+    {
+        var orderId = Guid.Parse("cdcdcdcd-cdcd-cdcd-cdcd-cdcdcdcdcdcd");
+
+        Services.AddSingleton<IMenuApiClient>(new StubMenuApiClient(() => Task.FromResult<IReadOnlyList<MenuCategoryDto>>(
+        [
+            Category("sandwiches", "Sanduiches", ("sandwich-x-burger", "X-Burger"))
+        ])));
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            GetById = _ => Task.FromResult(new OrderSummaryDto
+            {
+                Id = orderId,
+                SandwichItemCode = "sandwich-x-burger",
+                SideItemCode = null,
+                DrinkItemCode = null,
+                Subtotal = 12m,
+                Discount = 0m,
+                Total = 12m,
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+                UpdatedAtUtc = DateTimeOffset.UtcNow
+            }),
+            Delete = _ => Task.FromException(new InvalidOperationException("backend unavailable"))
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrderDetails>(
+            parameters => parameters.Add(page => page.Id, orderId));
+
+        cut.WaitForAssertion(() => cut.Find("#delete-order"));
+        cut.Find("#delete-order").Click();
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain("We couldn't delete the order right now. Please try again in a moment.");
+            cut.Markup.Should().NotContain("Order deleted");
+        });
+    }
+
+    [Fact]
+    public void OrderDetails_ShowsNotFoundLoadError_WhenOrderDoesNotExist()
+    {
+        var orderId = Guid.Parse("edededed-eded-eded-eded-edededededed");
+
+        Services.AddSingleton<IMenuApiClient>(new StubMenuApiClient(() => Task.FromResult<IReadOnlyList<MenuCategoryDto>>(
+        [
+            Category("sandwiches", "Sanduiches", ("sandwich-x-burger", "X-Burger"))
+        ])));
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            GetById = _ => Task.FromException<OrderSummaryDto>(new OrderApiNotFoundException("The requested order was not found."))
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrderDetails>(
+            parameters => parameters.Add(page => page.Id, orderId));
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain("Order unavailable");
+            cut.Markup.Should().Contain("The requested order was not found.");
+        });
+    }
+
+    [Fact]
+    public void OrderDetails_ShowsNotFoundError_WhenUpdateReturnsNotFound()
+    {
+        var orderId = Guid.Parse("f0f0f0f0-f0f0-f0f0-f0f0-f0f0f0f0f0f0");
+
+        Services.AddSingleton<IMenuApiClient>(new StubMenuApiClient(() => Task.FromResult<IReadOnlyList<MenuCategoryDto>>(
+        [
+            Category("sandwiches", "Sanduiches", ("sandwich-x-burger", "X-Burger"))
+        ])));
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            GetById = _ => Task.FromResult(new OrderSummaryDto
+            {
+                Id = orderId,
+                SandwichItemCode = "sandwich-x-burger",
+                SideItemCode = null,
+                DrinkItemCode = null,
+                Subtotal = 12m,
+                Discount = 0m,
+                Total = 12m,
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+                UpdatedAtUtc = DateTimeOffset.UtcNow
+            }),
+            Update = (_, _) => Task.FromException<OrderSummaryDto>(new OrderApiNotFoundException("The requested order was not found."))
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrderDetails>(
+            parameters => parameters.Add(page => page.Id, orderId));
+
+        cut.WaitForAssertion(() => cut.Find("form"));
+        cut.Find("form").Submit();
+
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("The requested order was not found."));
+    }
+
+    [Fact]
+    public void OrderDetails_ShowsGenericUpdateError_WhenUnexpectedFailureOccurs()
+    {
+        var orderId = Guid.Parse("f1f1f1f1-f1f1-f1f1-f1f1-f1f1f1f1f1f1");
+
+        Services.AddSingleton<IMenuApiClient>(new StubMenuApiClient(() => Task.FromResult<IReadOnlyList<MenuCategoryDto>>(
+        [
+            Category("sandwiches", "Sanduiches", ("sandwich-x-burger", "X-Burger"))
+        ])));
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            GetById = _ => Task.FromResult(new OrderSummaryDto
+            {
+                Id = orderId,
+                SandwichItemCode = "sandwich-x-burger",
+                SideItemCode = null,
+                DrinkItemCode = null,
+                Subtotal = 12m,
+                Discount = 0m,
+                Total = 12m,
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+                UpdatedAtUtc = DateTimeOffset.UtcNow
+            }),
+            Update = (_, _) => Task.FromException<OrderSummaryDto>(new InvalidOperationException("backend unavailable"))
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrderDetails>(
+            parameters => parameters.Add(page => page.Id, orderId));
+
+        cut.WaitForAssertion(() => cut.Find("form"));
+        cut.Find("form").Submit();
+
+        cut.WaitForAssertion(() =>
+            cut.Markup.Should().Contain("We couldn't update the order right now. Please try again in a moment."));
+    }
+
+    [Fact]
+    public void OrderDetails_IgnoresStaleNotFoundLoadResults_WhenRouteChanges()
+    {
+        var firstOrderId = Guid.Parse("f2f2f2f2-f2f2-f2f2-f2f2-f2f2f2f2f2f2");
+        var secondOrderId = Guid.Parse("f3f3f3f3-f3f3-f3f3-f3f3-f3f3f3f3f3f3");
+        var firstGetByIdCompletion = new TaskCompletionSource<OrderSummaryDto>();
+
+        Services.AddSingleton<IMenuApiClient>(new StubMenuApiClient(() => Task.FromResult<IReadOnlyList<MenuCategoryDto>>(
+        [
+            Category("sandwiches", "Sanduiches", ("sandwich-x-burger", "X-Burger"))
+        ])));
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            GetById = id => id == firstOrderId
+                ? firstGetByIdCompletion.Task
+                : Task.FromResult(new OrderSummaryDto
+                {
+                    Id = secondOrderId,
+                    SandwichItemCode = "sandwich-x-burger",
+                    SideItemCode = null,
+                    DrinkItemCode = null,
+                    Subtotal = 12m,
+                    Discount = 0m,
+                    Total = 12m,
+                    CreatedAtUtc = DateTimeOffset.UtcNow,
+                    UpdatedAtUtc = DateTimeOffset.UtcNow
+                })
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrderDetails>(
+            parameters => parameters.Add(page => page.Id, firstOrderId));
+
+        cut.SetParametersAndRender(parameters => parameters.Add(page => page.Id, secondOrderId));
+        firstGetByIdCompletion.SetException(new OrderApiNotFoundException("The requested order was not found."));
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain(secondOrderId.ToString());
+            cut.Markup.Should().NotContain("Order unavailable");
+        });
+    }
+
+    [Fact]
+    public void OrderDetails_ReloadsLatestRouteAfterDeleteCompletes()
+    {
+        var firstOrderId = Guid.Parse("f4f4f4f4-f4f4-f4f4-f4f4-f4f4f4f4f4f4");
+        var secondOrderId = Guid.Parse("f5f5f5f5-f5f5-f5f5-f5f5-f5f5f5f5f5f5");
+        var deleteCompletion = new TaskCompletionSource();
+
+        Services.AddSingleton<IMenuApiClient>(new StubMenuApiClient(() => Task.FromResult<IReadOnlyList<MenuCategoryDto>>(
+        [
+            Category("sandwiches", "Sanduiches", ("sandwich-x-burger", "X-Burger"))
+        ])));
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            GetById = id => Task.FromResult(new OrderSummaryDto
+            {
+                Id = id,
+                SandwichItemCode = "sandwich-x-burger",
+                SideItemCode = null,
+                DrinkItemCode = null,
+                Subtotal = 12m,
+                Discount = 0m,
+                Total = 12m,
+                CreatedAtUtc = DateTimeOffset.UtcNow,
+                UpdatedAtUtc = DateTimeOffset.UtcNow
+            }),
+            Delete = id => id == firstOrderId ? deleteCompletion.Task : Task.CompletedTask
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrderDetails>(
+            parameters => parameters.Add(page => page.Id, firstOrderId));
+
+        cut.WaitForAssertion(() => cut.Find("#delete-order"));
+        cut.Find("#delete-order").Click();
+        cut.SetParametersAndRender(parameters => parameters.Add(page => page.Id, secondOrderId));
+        deleteCompletion.SetResult();
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain(secondOrderId.ToString());
+            cut.Markup.Should().NotContain("Order deleted");
+        });
+    }
+
     private static MenuCategoryDto Category(string code, string displayName, params (string Code, string Name)[] items) =>
         new()
         {
