@@ -78,6 +78,53 @@ public class MenuApiClientTests
         await act.Should().ThrowAsync<HttpRequestException>();
     }
 
+    [Fact]
+    public async Task GetMenuAsync_ReturnsEmptyList_WhenApiReturnsNoContent()
+    {
+        var handler = new StubHttpMessageHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.NoContent)));
+
+        var services = new ServiceCollection();
+        services.AddHttpClient(Program.ApiHttpClientName, client =>
+            {
+                client.BaseAddress = new Uri("https://api.goodhamburguer.local/api/v1/");
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddScoped<IMenuApiClient, MenuApiClient>();
+
+        await using var provider = services.BuildServiceProvider().CreateAsyncScope();
+        var sut = provider.ServiceProvider.GetRequiredService<IMenuApiClient>();
+
+        var result = await sut.GetMenuAsync();
+
+        result.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task GetMenuAsync_ReturnsEmptyList_WhenApiReturnsInvalidJson()
+    {
+        var handler = new StubHttpMessageHandler(_ =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent("{ invalid-json")
+            }));
+
+        var services = new ServiceCollection();
+        services.AddHttpClient(Program.ApiHttpClientName, client =>
+            {
+                client.BaseAddress = new Uri("https://api.goodhamburguer.local/api/v1/");
+            })
+            .ConfigurePrimaryHttpMessageHandler(() => handler);
+        services.AddScoped<IMenuApiClient, MenuApiClient>();
+
+        await using var provider = services.BuildServiceProvider().CreateAsyncScope();
+        var sut = provider.ServiceProvider.GetRequiredService<IMenuApiClient>();
+
+        var result = await sut.GetMenuAsync();
+
+        result.Should().BeEmpty();
+    }
+
     private sealed class StubHttpMessageHandler(Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
         : HttpMessageHandler
     {

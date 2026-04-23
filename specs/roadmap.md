@@ -121,7 +121,7 @@ Objetivo: entregar a demonstracao visual integrada apos a consolidacao do back-e
 - cobrir os fluxos principais de consulta de cardapio e operacao de pedidos
 - validar integracao funcional entre frontend e API em execucao local e Docker
 
-## Fase 11 - Testes e Cobertura
+## Fase 11 - Testes e Cobertura [Concluida]
 
 Objetivo: consolidar a confianca tecnica da entrega.
 

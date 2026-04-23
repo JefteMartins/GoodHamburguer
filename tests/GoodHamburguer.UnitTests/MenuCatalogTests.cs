@@ -42,4 +42,26 @@ public class MenuCatalogTests
         item.Should().NotBeNull();
         item!.Name.Should().Be("X Burger");
     }
+
+    [Fact]
+    public void FindByCode_ShouldReturnNull_WhenCodeIsEmpty()
+    {
+        var catalog = new MenuCatalog(
+        [
+            new MenuItem("sandwich-x-burger", "X Burger", MenuCategory.Sandwiches, 5.00m)
+        ]);
+
+        catalog.FindByCode("   ").Should().BeNull();
+    }
+
+    [Fact]
+    public void FindByCode_ShouldReturnNull_WhenCodeIsNotFound()
+    {
+        var catalog = new MenuCatalog(
+        [
+            new MenuItem("sandwich-x-burger", "X Burger", MenuCategory.Sandwiches, 5.00m)
+        ]);
+
+        catalog.FindByCode("sandwich-missing").Should().BeNull();
+    }
 }

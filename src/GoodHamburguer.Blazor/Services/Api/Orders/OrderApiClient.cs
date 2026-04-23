@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GoodHamburguer.Blazor.Services.Api.Orders;
@@ -16,8 +17,7 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
             throw await CreateProblemExceptionAsync(response, cancellationToken);
         }
 
-        var orders = await response.Content.ReadFromJsonAsync<IReadOnlyList<OrderSummaryDto>>(cancellationToken: cancellationToken);
-        return orders ?? [];
+        return await ReadOrderListAsync(response, cancellationToken);
     }
 
     public async Task<OrderSummaryDto> CreateOrderAsync(
@@ -34,8 +34,7 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
 
         response.EnsureSuccessStatusCode();
 
-        var order = await response.Content.ReadFromJsonAsync<OrderSummaryDto>(cancellationToken: cancellationToken);
-        return order ?? throw new InvalidOperationException("The API returned an empty order payload.");
+        return await ReadRequiredOrderAsync(response, cancellationToken);
     }
 
     public async Task<OrderSummaryDto> GetOrderByIdAsync(Guid id, CancellationToken cancellationToken = default)
@@ -50,8 +49,7 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
 
         response.EnsureSuccessStatusCode();
 
-        var order = await response.Content.ReadFromJsonAsync<OrderSummaryDto>(cancellationToken: cancellationToken);
-        return order ?? throw new InvalidOperationException("The API returned an empty order payload.");
+        return await ReadRequiredOrderAsync(response, cancellationToken);
     }
 
     public async Task<OrderSummaryDto> UpdateOrderAsync(
@@ -74,8 +72,7 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
 
         response.EnsureSuccessStatusCode();
 
-        var order = await response.Content.ReadFromJsonAsync<OrderSummaryDto>(cancellationToken: cancellationToken);
-        return order ?? throw new InvalidOperationException("The API returned an empty order payload.");
+        return await ReadRequiredOrderAsync(response, cancellationToken);
     }
 
     public async Task DeleteOrderAsync(Guid id, CancellationToken cancellationToken = default)
@@ -95,7 +92,16 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
         HttpResponseMessage response,
         CancellationToken cancellationToken)
     {
-        var details = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken: cancellationToken);
+        ValidationProblemDetails? details;
+        try
+        {
+            details = await response.Content.ReadFromJsonAsync<ValidationProblemDetails>(cancellationToken: cancellationToken);
+        }
+        catch (JsonException)
+        {
+            details = null;
+        }
+
         var errors = details?.Errors?.ToDictionary(pair => pair.Key, pair => pair.Value) ??
             new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
 
@@ -110,7 +116,16 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
         HttpResponseMessage response,
         CancellationToken cancellationToken)
     {
-        var details = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken: cancellationToken);
+        ProblemDetails? details;
+        try
+        {
+            details = await response.Content.ReadFromJsonAsync<ProblemDetails>(cancellationToken: cancellationToken);
+        }
+        catch (JsonException)
+        {
+            details = null;
+        }
+
         var message = !string.IsNullOrWhiteSpace(details?.Detail)
             ? details.Detail
             : !string.IsNullOrWhiteSpace(details?.Title)
@@ -118,5 +133,45 @@ public sealed class OrderApiClient(IHttpClientFactory httpClientFactory) : IOrde
                 : "The order request could not be completed.";
 
         return new OrderApiProblemException(message);
+    }
+
+    private static async Task<IReadOnlyList<OrderSummaryDto>> ReadOrderListAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        if (response.Content.Headers.ContentLength is 0)
+        {
+            return [];
+        }
+
+        try
+        {
+            var orders = await response.Content.ReadFromJsonAsync<IReadOnlyList<OrderSummaryDto>>(cancellationToken: cancellationToken);
+            return orders ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
+    private static async Task<OrderSummaryDto> ReadRequiredOrderAsync(
+        HttpResponseMessage response,
+        CancellationToken cancellationToken)
+    {
+        if (response.Content.Headers.ContentLength is 0)
+        {
+            throw new InvalidOperationException("The API returned an empty order payload.");
+        }
+
+        try
+        {
+            var order = await response.Content.ReadFromJsonAsync<OrderSummaryDto>(cancellationToken: cancellationToken);
+            return order ?? throw new InvalidOperationException("The API returned an empty order payload.");
+        }
+        catch (JsonException)
+        {
+            throw new InvalidOperationException("The API returned an empty order payload.");
+        }
     }
 }
