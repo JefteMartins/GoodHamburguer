@@ -38,7 +38,7 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
             sandwichItemCode = "sandwich-x-burger"
         });
 
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdOrder = await createResponse.Content.ReadFromJsonAsync<OrderContract>();
         createdOrder.Should().NotBeNull();
@@ -65,7 +65,7 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
             drinkItemCode = "drink-soft-drink"
         });
 
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdOrder = await createResponse.Content.ReadFromJsonAsync<OrderContract>();
         createdOrder.Should().NotBeNull();
@@ -93,6 +93,24 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
     }
 
     [Fact]
+    public async Task Create_ShouldReturnCreated_WithLocationHeader()
+    {
+        var response = await _client.PostAsJsonAsync("/api/v1/orders", new
+        {
+            sandwichItemCode = "sandwich-x-burger",
+            sideItemCode = "side-fries",
+            drinkItemCode = "drink-soft-drink"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        response.Headers.Location.Should().NotBeNull();
+
+        var createdOrder = await response.Content.ReadFromJsonAsync<OrderContract>();
+        createdOrder.Should().NotBeNull();
+        response.Headers.Location!.ToString().Should().EndWith($"/api/v1/orders/{createdOrder!.Id}");
+    }
+
+    [Fact]
     public async Task Create_ShouldReturnCalculatedDiscount_WhenOrderHasFullCombo()
     {
         var response = await _client.PostAsJsonAsync("/api/v1/orders", new
@@ -102,7 +120,7 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
             drinkItemCode = "drink-soft-drink"
         });
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var order = await response.Content.ReadFromJsonAsync<OrderContract>();
         order.Should().NotBeNull();
@@ -123,7 +141,7 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
             drinkItemCode = "drink-soft-drink"
         });
 
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdOrder = await createResponse.Content.ReadFromJsonAsync<OrderContract>();
         createdOrder.Should().NotBeNull();
@@ -162,7 +180,7 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
             drinkItemCode = "drink-soft-drink"
         });
 
-        firstCreateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        firstCreateResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var firstCreatedOrder = await firstCreateResponse.Content.ReadFromJsonAsync<OrderContract>();
         firstCreatedOrder.Should().NotBeNull();
@@ -175,7 +193,7 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
             sideItemCode = "side-fries"
         });
 
-        secondCreateResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        secondCreateResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var secondCreatedOrder = await secondCreateResponse.Content.ReadFromJsonAsync<OrderContract>();
         secondCreatedOrder.Should().NotBeNull();
@@ -219,7 +237,7 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
             sandwichItemCode = "sandwich-x-burger"
         });
 
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdOrder = await createResponse.Content.ReadFromJsonAsync<OrderContract>();
         createdOrder.Should().NotBeNull();
@@ -227,6 +245,7 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
         var deleteResponse = await _client.DeleteAsync($"/api/v1/orders/{createdOrder!.Id}");
 
         deleteResponse.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        deleteResponse.Content.Headers.ContentLength.Should().Be(0);
 
         var getResponse = await _client.GetAsync($"/api/v1/orders/{createdOrder.Id}");
         getResponse.StatusCode.Should().Be(HttpStatusCode.NotFound);

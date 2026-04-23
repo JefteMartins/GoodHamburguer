@@ -41,7 +41,20 @@ public sealed class SystemHealthEndpointTests : IClassFixture<MySqlWebApplicatio
         content.Should().NotBeNull();
         content!.Service.Should().Be("GoodHamburguer.Api");
         content.Version.Should().Be("v1");
-        content.Status.Should().Be("phase-8-ready");
+        content.Status.Should().Be("phase-12-ready");
+    }
+
+    [Fact]
+    public async Task Readiness_ShouldReturnStructuredPayload()
+    {
+        var response = await _client.GetAsync("/health/ready");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var payload = await response.Content.ReadFromJsonAsync<HealthResponseContract>();
+        payload.Should().NotBeNull();
+        payload!.Status.Should().Be("Healthy");
+        payload.Entries.Should().ContainKey("mysql");
     }
 
     public sealed class SystemInfoContract
@@ -50,6 +63,18 @@ public sealed class SystemHealthEndpointTests : IClassFixture<MySqlWebApplicatio
 
         public string? Version { get; init; }
 
+        public string? Status { get; init; }
+    }
+
+    public sealed class HealthResponseContract
+    {
+        public string? Status { get; init; }
+
+        public required IDictionary<string, HealthEntryContract> Entries { get; init; }
+    }
+
+    public sealed class HealthEntryContract
+    {
         public string? Status { get; init; }
     }
 }
