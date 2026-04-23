@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace GoodHamburguer.Blazor.Services.Api.Menu;
 
@@ -10,9 +11,21 @@ public sealed class MenuApiClient(IHttpClientFactory httpClientFactory) : IMenuA
         using var response = await client.GetAsync("menu", cancellationToken);
         response.EnsureSuccessStatusCode();
 
-        var categories = await response.Content.ReadFromJsonAsync<IReadOnlyList<MenuCategoryDto>>(
-            cancellationToken: cancellationToken);
+        if (response.Content.Headers.ContentLength is 0)
+        {
+            return [];
+        }
 
-        return categories ?? [];
+        try
+        {
+            var categories = await response.Content.ReadFromJsonAsync<IReadOnlyList<MenuCategoryDto>>(
+                cancellationToken: cancellationToken);
+
+            return categories ?? [];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
     }
 }

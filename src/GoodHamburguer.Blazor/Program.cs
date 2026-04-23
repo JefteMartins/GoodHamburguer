@@ -1,6 +1,7 @@
 using GoodHamburguer.Blazor.Components;
 using GoodHamburguer.Blazor.Services.Api.Menu;
 using GoodHamburguer.Blazor.Services.Api.Orders;
+using System.Diagnostics.CodeAnalysis;
 
 namespace GoodHamburguer.Blazor;
 
@@ -8,9 +9,26 @@ public class Program
 {
     public const string ApiHttpClientName = "GoodHamburguer.Api";
 
+    [ExcludeFromCodeCoverage]
     public static void Main(string[] args)
     {
-        var builder = WebApplication.CreateBuilder(args);
+        var app = BuildApp(args);
+        app.Run();
+    }
+
+    public static WebApplication BuildApp(
+        string[] args,
+        string? environmentName = null,
+        bool mapStaticAssets = true,
+        string? staticAssetsManifestPath = null)
+    {
+        var builder = environmentName is null
+            ? WebApplication.CreateBuilder(args)
+            : WebApplication.CreateBuilder(new WebApplicationOptions
+            {
+                Args = args,
+                EnvironmentName = environmentName
+            });
 
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
@@ -29,10 +47,21 @@ public class Program
         app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
         app.UseAntiforgery();
 
-        app.MapStaticAssets();
+        if (mapStaticAssets)
+        {
+            if (string.IsNullOrWhiteSpace(staticAssetsManifestPath))
+            {
+                app.MapStaticAssets();
+            }
+            else
+            {
+                app.MapStaticAssets(staticAssetsManifestPath);
+            }
+        }
+
         app.MapRazorComponents<App>()
             .AddInteractiveServerRenderMode();
 
-        app.Run();
+        return app;
     }
 }

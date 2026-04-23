@@ -81,6 +81,37 @@ public class OrdersDashboardPageTests : TestContext
             cut.Markup.Should().Contain("The orders service is temporarily unavailable."));
     }
 
+    [Fact]
+    public void OrdersDashboard_ShowsGenericErrorMessageWhenUnexpectedFailureOccurs()
+    {
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            List = () => Task.FromException<IReadOnlyList<OrderSummaryDto>>(new InvalidOperationException("boom"))
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrdersDashboard>();
+
+        cut.WaitForAssertion(() =>
+            cut.Markup.Should().Contain("We couldn't load the orders right now. Please try again in a moment."));
+    }
+
+    [Fact]
+    public void OrdersDashboard_ShowsLoadingStateWhileRequestIsInFlight()
+    {
+        var completion = new TaskCompletionSource<IReadOnlyList<OrderSummaryDto>>();
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient
+        {
+            List = () => completion.Task
+        });
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrdersDashboard>();
+
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Loading orders..."));
+
+        completion.SetResult([]);
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("No orders have been created yet."));
+    }
+
     private static OrderSummaryDto Order(string id, string? sandwichCode, decimal total) =>
         new()
         {
