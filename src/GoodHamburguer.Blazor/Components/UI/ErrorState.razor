@@ -1,0 +1,20 @@
+@namespace GoodHamburguer.Blazor.Components.UI
+
+<div class="error-state surface-panel">
+    <div class="error-icon">!</div>
+    <h2>@Title</h2>
+    <p>@Message</p>
+    @if (OnRetry.HasDelegate)
+    {
+        <button type="button" class="btn btn-outline-secondary" @onclick="OnRetry">
+            @RetryText
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Something went wrong";
+    [Parameter] public string? Message { get; set; }
+    [Parameter] public EventCallback OnRetry { get; set; }
+    [Parameter] public string RetryText { get; set; } = "Try again";
+}

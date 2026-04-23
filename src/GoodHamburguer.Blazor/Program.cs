@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace GoodHamburguer.Blazor;
 
-public class Program
+public static class Program
 {
     public const string ApiHttpClientName = "GoodHamburguer.Api";
 

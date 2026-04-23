@@ -37,24 +37,17 @@
 
     @if (isLoading)
     {
-        <section class="orders-dashboard-state surface-panel">
-            <p>Loading orders...</p>
-        </section>
+        <LoadingState Text="Loading live entries..." />
     }
     else if (errorMessage is not null)
     {
-        <section class="orders-dashboard-state orders-dashboard-state-error surface-panel">
-            <h2>Orders unavailable</h2>
-            <p>@errorMessage</p>
-            <button type="button" class="btn btn-outline-secondary" @onclick="LoadAsync">Try again</button>
-        </section>
+        <ErrorState Title="Orders unavailable" Message="@errorMessage" OnRetry="LoadAsync" />
     }
     else if (orders.Count == 0)
     {
-        <section class="orders-dashboard-state surface-panel">
-            <h2>Nothing to review</h2>
-            <p>No orders have been created yet.</p>
-        </section>
+        <EmptyState Title="Nothing to review" Message="No orders have been created yet.">
+            <a class="btn btn-primary" href="/orders/new">Create first order</a>
+        </EmptyState>
     }
     else
     {

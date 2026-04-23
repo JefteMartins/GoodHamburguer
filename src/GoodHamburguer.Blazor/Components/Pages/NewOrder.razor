@@ -25,19 +25,11 @@
 
     @if (isLoadingMenu)
     {
-        <section class="order-state order-state-loading surface-panel">
-            <p>Loading menu options...</p>
-        </section>
+        <LoadingState Text="Loading menu options..." />
     }
     else if (menuLoadErrorMessage is not null)
     {
-        <section class="order-state order-state-error surface-panel">
-            <h2>Menu unavailable</h2>
-            <p>@menuLoadErrorMessage</p>
-            <button type="button" class="btn btn-outline-secondary" @onclick="LoadMenuAsync">
-                Try again
-            </button>
-        </section>
+        <ErrorState Title="Menu unavailable" Message="@menuLoadErrorMessage" OnRetry="LoadMenuAsync" />
     }
     else if (createdOrder is not null)
     {
