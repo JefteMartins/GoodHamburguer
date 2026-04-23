@@ -64,7 +64,7 @@ public sealed class OrdersEndpointTests : IClassFixture<MySqlWebApplicationFacto
             sandwichItemCode = "sandwich-x-burger"
         });
 
-        createResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
         var createdOrder = await createResponse.Content.ReadFromJsonAsync<OrderContract>();
         createdOrder.Should().NotBeNull();
