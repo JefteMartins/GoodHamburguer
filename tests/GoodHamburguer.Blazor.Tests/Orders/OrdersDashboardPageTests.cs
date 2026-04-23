@@ -106,7 +106,7 @@ public class OrdersDashboardPageTests : TestContext
 
         var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.OrdersDashboard>();
 
-        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Loading orders..."));
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Loading live entries..."));
 
         completion.SetResult([]);
         cut.WaitForAssertion(() => cut.Markup.Should().Contain("No orders have been created yet."));
