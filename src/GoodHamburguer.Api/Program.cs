@@ -108,15 +108,17 @@ public class Program
         });
 
         app.UseAuthorization();
-        app.MapHealthChecks("/health/live", new HealthCheckOptions
-        {
-            Predicate = registration => registration.Tags.Contains("live")
-        });
-        app.MapHealthChecks("/health/ready", new HealthCheckOptions
-        {
-            Predicate = registration => registration.Tags.Contains("ready")
-        });
-        app.MapControllers();
-        await app.RunAsync();
+app.MapHealthChecks("/health/live", new HealthCheckOptions
+{
+    Predicate = registration => registration.Tags.Contains("live"),
+    ResponseWriter = HealthCheckJsonResponseWriter.WriteAsync
+});
+app.MapHealthChecks("/health/ready", new HealthCheckOptions
+{
+    Predicate = registration => registration.Tags.Contains("ready"),
+    ResponseWriter = HealthCheckJsonResponseWriter.WriteAsync
+});
+app.MapControllers();
+await app.RunAsync();
     }
 }
