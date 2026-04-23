@@ -1,19 +1,69 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">GoodHamburguer</a>
+<input id="nav-toggle" type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="sidebar-shell">
+    <div class="sidebar-brand-row">
+        <a class="sidebar-brand" href="">
+            <span class="sidebar-brand-mark">GH</span>
+            <span class="sidebar-brand-copy">
+                <strong>GoodHamburguer</strong>
+                <small>Premium Industrial UI</small>
+            </span>
+        </a>
+
+        <label class="sidebar-toggle" for="nav-toggle">Menu</label>
+    </div>
+
+    <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+        <nav class="nav-stack">
+            <p class="nav-section-label">Operational views</p>
+
+            <div class="nav-item">
+                <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
+                    <span class="nav-icon nav-icon-home" aria-hidden="true"></span>
+                    <span class="nav-copy">
+                        <strong>Home</strong>
+                        <small>Foundation overview</small>
+                    </span>
+                </NavLink>
+            </div>
+
+            <div class="nav-item">
+                <NavLink class="nav-link" href="menu">
+                    <span class="nav-icon nav-icon-menu" aria-hidden="true"></span>
+                    <span class="nav-copy">
+                        <strong>Menu</strong>
+                        <small>Live product catalog</small>
+                    </span>
+                </NavLink>
+            </div>
+
+            <div class="nav-item">
+                <NavLink class="nav-link" href="orders/new">
+                    <span class="nav-icon nav-icon-create" aria-hidden="true"></span>
+                    <span class="nav-copy">
+                        <strong>New Order</strong>
+                        <small>Compose and send</small>
+                    </span>
+                </NavLink>
+            </div>
+
+            <div class="nav-item">
+                <NavLink class="nav-link" href="dashboard/orders">
+                    <span class="nav-icon nav-icon-orders" aria-hidden="true"></span>
+                    <span class="nav-copy">
+                        <strong>Orders</strong>
+                        <small>Monitor active tickets</small>
+                    </span>
+                </NavLink>
+            </div>
+        </nav>
+
+        <aside class="sidebar-card">
+            <p class="nav-section-label">Kitchen status</p>
+            <h2>Live API linked</h2>
+            <p>
+                Review menu data, create fresh orders, inspect order details, and keep the queue visible from a single dark control surface.
+            </p>
+        </aside>
     </div>
 </div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-    </nav>
-</div>
-

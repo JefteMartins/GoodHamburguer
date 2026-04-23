@@ -1,0 +1,348 @@
+@page "/orders/{Id:guid}"
+@using System.Globalization
+@using GoodHamburguer.Blazor.Services.Api.Menu
+@using GoodHamburguer.Blazor.Services.Api.Orders
+@inject IMenuApiClient MenuApiClient
+@inject IOrderApiClient OrderApiClient
+
+<PageTitle>Order Details | GoodHamburguer</PageTitle>
+
+<section class="order-details-page">
+    <header class="order-details-hero surface-panel">
+        <div>
+            <p class="order-details-kicker section-kicker">Order details</p>
+            <h1>@Id</h1>
+            <p class="section-summary">Review the current ticket, adjust selections, or remove it from the queue.</p>
+        </div>
+
+        <div class="order-details-meta">
+            <span class="pill">GET / PUT / DELETE</span>
+            <strong>Operational ticket</strong>
+            <p>Inspect the current order, refine the selection, and keep the board in sync with the live kitchen state.</p>
+        </div>
+    </header>
+
+    @if (isLoading)
+    {
+        <section class="order-details-state surface-panel">
+            <p>Loading order...</p>
+        </section>
+    }
+    else if (loadErrorMessage is not null)
+    {
+        <section class="order-details-state order-details-state-error surface-panel">
+            <h2>Order unavailable</h2>
+            <p>@loadErrorMessage</p>
+            <button type="button" class="btn btn-outline-secondary" @onclick="LoadAsync">Try again</button>
+        </section>
+    }
+    else if (isDeleted)
+    {
+        <section class="order-details-state surface-panel">
+            <h2>Order deleted</h2>
+            <p>The order was removed successfully.</p>
+        </section>
+    }
+    else
+    {
+        <div class="order-details-layout">
+            <EditForm Model="formModel" OnSubmit="HandleUpdateAsync" FormName="order-details" class="order-details-form surface-panel">
+                <div class="order-details-form-header">
+                    <div>
+                        <p class="section-kicker">Editable ticket</p>
+                        <h2>Adjust menu selections</h2>
+                    </div>
+                    <span class="pill">Live order state</span>
+                </div>
+
+                <div class="order-details-grid">
+                    <section class="order-details-panel">
+                        <label for="sandwich">Sandwich</label>
+                        <InputSelect id="sandwich" class="form-select" @bind-Value="formModel.SandwichItemCode">
+                            <option value="">No sandwich</option>
+                            @foreach (var item in GetItems("sandwiches"))
+                            {
+                                <option value="@item.Code">@item.Name</option>
+                            }
+                        </InputSelect>
+                    </section>
+
+                    <section class="order-details-panel">
+                        <label for="side">Side</label>
+                        <InputSelect id="side" class="form-select" @bind-Value="formModel.SideItemCode">
+                            <option value="">No side</option>
+                            @foreach (var item in GetItems("sides"))
+                            {
+                                <option value="@item.Code">@item.Name</option>
+                            }
+                        </InputSelect>
+                    </section>
+
+                    <section class="order-details-panel">
+                        <label for="drink">Drink</label>
+                        <InputSelect id="drink" class="form-select" @bind-Value="formModel.DrinkItemCode">
+                            <option value="">No drink</option>
+                            @foreach (var item in GetItems("drinks"))
+                            {
+                                <option value="@item.Code">@item.Name</option>
+                            }
+                        </InputSelect>
+                    </section>
+                </div>
+
+                @if (statusMessage is not null)
+                {
+                    <section class="order-details-state surface-panel">
+                        <p>@statusMessage</p>
+                    </section>
+                }
+
+                @if (errorMessage is not null)
+                {
+                    <section class="order-details-state order-details-state-error surface-panel">
+                        <p>@errorMessage</p>
+                        @if (validationMessages.Count > 0)
+                        {
+                            <ul>
+                                @foreach (var message in validationMessages)
+                                {
+                                    <li>@message</li>
+                                }
+                            </ul>
+                        }
+                    </section>
+                }
+
+                <div class="order-details-actions">
+                    <button type="submit" class="btn btn-primary" disabled="@IsActionInFlight">@(isSubmitting ? "Saving..." : "Save changes")</button>
+                    <button id="delete-order" type="button" class="btn btn-outline-danger" disabled="@IsActionInFlight" @onclick="HandleDeleteAsync">@(isDeleting ? "Deleting..." : "Delete order")</button>
+                </div>
+            </EditForm>
+
+            <aside class="order-details-side">
+                <section class="order-details-summary surface-panel">
+                    <p class="section-kicker">Financial summary</p>
+                    <dl class="order-details-summary-grid data-grid">
+                        <div class="data-card">
+                            <dt>Subtotal</dt>
+                            <dd>@currentOrder!.Subtotal.ToString("0.00", CultureInfo.InvariantCulture)</dd>
+                        </div>
+                        <div class="data-card">
+                            <dt>Discount</dt>
+                            <dd>@currentOrder.Discount.ToString("0.00", CultureInfo.InvariantCulture)</dd>
+                        </div>
+                        <div class="data-card">
+                            <dt>Total</dt>
+                            <dd>@currentOrder.Total.ToString("0.00", CultureInfo.InvariantCulture)</dd>
+                        </div>
+                    </dl>
+                </section>
+
+                <section class="order-details-summary surface-panel">
+                    <p class="section-kicker">Current configuration</p>
+                    <dl class="order-details-summary-grid data-grid compact">
+                        <div class="data-card">
+                            <dt>Sandwich</dt>
+                            <dd>@(currentOrder?.SandwichItemCode ?? "None")</dd>
+                        </div>
+                        <div class="data-card">
+                            <dt>Side</dt>
+                            <dd>@(currentOrder?.SideItemCode ?? "None")</dd>
+                        </div>
+                        <div class="data-card">
+                            <dt>Drink</dt>
+                            <dd>@(currentOrder?.DrinkItemCode ?? "None")</dd>
+                        </div>
+                    </dl>
+                </section>
+            </aside>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    private readonly OrderFormModel formModel = new();
+    private IReadOnlyList<MenuCategoryDto> categories = [];
+    private List<string> validationMessages = [];
+    private bool isLoading = true;
+    private bool isSubmitting;
+    private bool isDeleting;
+    private bool isDeleted;
+    private int loadVersion;
+    private bool pendingReload;
+    private string? loadErrorMessage;
+    private string? errorMessage;
+    private string? statusMessage;
+    private OrderSummaryDto? currentOrder;
+
+    private bool IsActionInFlight => isSubmitting || isDeleting;
+
+    protected override Task OnParametersSetAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        if (isSubmitting || isDeleting)
+        {
+            pendingReload = true;
+            isLoading = true;
+            loadErrorMessage = null;
+            errorMessage = null;
+            statusMessage = null;
+            return;
+        }
+
+        pendingReload = false;
+
+        var currentLoadVersion = ++loadVersion;
+
+        isLoading = true;
+        loadErrorMessage = null;
+        errorMessage = null;
+        statusMessage = null;
+        validationMessages = [];
+        isDeleted = false;
+
+        try
+        {
+            var menuTask = MenuApiClient.GetMenuAsync();
+            var orderTask = OrderApiClient.GetOrderByIdAsync(Id);
+            await Task.WhenAll(menuTask, orderTask);
+
+            if (currentLoadVersion != loadVersion)
+            {
+                return;
+            }
+
+            categories = menuTask.Result;
+            currentOrder = orderTask.Result;
+            formModel.SandwichItemCode = currentOrder.SandwichItemCode;
+            formModel.SideItemCode = currentOrder.SideItemCode;
+            formModel.DrinkItemCode = currentOrder.DrinkItemCode;
+        }
+        catch (OrderApiNotFoundException)
+        {
+            if (currentLoadVersion != loadVersion)
+            {
+                return;
+            }
+
+            loadErrorMessage = "The requested order was not found.";
+        }
+        catch (Exception)
+        {
+            if (currentLoadVersion != loadVersion)
+            {
+                return;
+            }
+
+            loadErrorMessage = "We couldn't load the order right now. Please try again in a moment.";
+        }
+        finally
+        {
+            if (currentLoadVersion == loadVersion)
+            {
+                isLoading = false;
+            }
+        }
+    }
+
+    private IReadOnlyList<MenuItemDto> GetItems(string categoryCode) =>
+        categories.FirstOrDefault(category => string.Equals(category.Code, categoryCode, StringComparison.OrdinalIgnoreCase))?.Items ?? [];
+
+    private async Task HandleUpdateAsync(EditContext _)
+    {
+        if (IsActionInFlight)
+        {
+            return;
+        }
+
+        errorMessage = null;
+        statusMessage = null;
+        validationMessages = [];
+        isSubmitting = true;
+
+        try
+        {
+            currentOrder = await OrderApiClient.UpdateOrderAsync(Id, new UpdateOrderRequestDto
+            {
+                SandwichItemCode = Normalize(formModel.SandwichItemCode),
+                SideItemCode = Normalize(formModel.SideItemCode),
+                DrinkItemCode = Normalize(formModel.DrinkItemCode)
+            });
+
+            statusMessage = "Order updated";
+        }
+        catch (OrderApiValidationException exception)
+        {
+            errorMessage = exception.Message;
+            validationMessages = exception.Errors
+                .SelectMany(pair => pair.Value.Select(value => $"{pair.Key}: {value}"))
+                .ToList();
+        }
+        catch (OrderApiNotFoundException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (Exception)
+        {
+            errorMessage = "We couldn't update the order right now. Please try again in a moment.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+
+        if (pendingReload)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private async Task HandleDeleteAsync()
+    {
+        if (IsActionInFlight)
+        {
+            return;
+        }
+
+        errorMessage = null;
+        statusMessage = null;
+        validationMessages = [];
+        isDeleting = true;
+
+        try
+        {
+            await OrderApiClient.DeleteOrderAsync(Id);
+            isDeleted = true;
+        }
+        catch (OrderApiNotFoundException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (Exception)
+        {
+            errorMessage = "We couldn't delete the order right now. Please try again in a moment.";
+        }
+        finally
+        {
+            isDeleting = false;
+        }
+
+        if (pendingReload)
+        {
+            await LoadAsync();
+        }
+    }
+
+    private static string? Normalize(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
+
+    private sealed class OrderFormModel
+    {
+        public string? SandwichItemCode { get; set; }
+        public string? SideItemCode { get; set; }
+        public string? DrinkItemCode { get; set; }
+    }
+}

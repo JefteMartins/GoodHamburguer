@@ -105,14 +105,21 @@ Objetivo: facilitar execucao e avaliacao do projeto.
 - documentar comandos de build e run
 - revisar funcionamento de health checks e readiness no ambiente containerizado
 
-## Fase 10 - Frontend Blazor
+## Fase 10 - Frontend Blazor guiado por Stitch [Concluida]
 
-Objetivo: entregar a demonstracao visual integrada apos a consolidacao do back-end.
+Objetivo: entregar a demonstracao visual integrada apos a consolidacao do back-end, usando as telas do projeto Stitch como referencia de UX e estrutura.
 
-- implementar o frontend em Blazor Web App
-- consumir a API versionada
+- usar o MCP Stitch como fonte visual do projeto `9060755920845036151`
+- mapear telas Stitch para rotas Blazor:
+  - `Orders Dashboard` -> `/dashboard/orders`
+  - `New Order` -> `/orders/new`
+  - `Order Details` -> `/orders/{id}`
+  - `Product Menu` -> `/menu`
+- extrair tokens visuais essenciais (cores, tipografia, espacamento, estados) para um design system local do Blazor
+- implementar o frontend em Blazor Web App sem dependencia de runtime com Stitch
+- consumir a API versionada `v1`
 - cobrir os fluxos principais de consulta de cardapio e operacao de pedidos
-- validar integracao funcional entre frontend e API
+- validar integracao funcional entre frontend e API em execucao local e Docker
 
 ## Fase 11 - Testes e Cobertura
 
@@ -159,3 +166,4 @@ A primeira entrega esta pronta quando:
 - os testes automatizados sustentam a confianca da entrega
 - a pipeline de CI executa build e testes automaticamente
 - existe README suficiente para avaliacao tecnica
+- as quatro telas de referencia do Stitch estao refletidas nas rotas principais do frontend Blazor

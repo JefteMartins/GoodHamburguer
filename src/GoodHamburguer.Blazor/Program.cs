@@ -1,9 +1,13 @@
 using GoodHamburguer.Blazor.Components;
+using GoodHamburguer.Blazor.Services.Api.Menu;
+using GoodHamburguer.Blazor.Services.Api.Orders;
 
 namespace GoodHamburguer.Blazor;
 
 public class Program
 {
+    public const string ApiHttpClientName = "GoodHamburguer.Api";
+
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -11,12 +15,9 @@ public class Program
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
 
-        builder.Services.AddHttpClient("GoodHamburguer.Api", (serviceProvider, client) =>
-        {
-            var configuration = serviceProvider.GetRequiredService<IConfiguration>();
-            var apiBaseUrl = configuration["Api:BaseUrl"] ?? "http://localhost:8081";
-            client.BaseAddress = new Uri(apiBaseUrl);
-        });
+        builder.Services.AddApiIntegration(builder.Configuration);
+        builder.Services.AddScoped<IMenuApiClient, MenuApiClient>();
+        builder.Services.AddScoped<IOrderApiClient, OrderApiClient>();
 
         var app = builder.Build();
 

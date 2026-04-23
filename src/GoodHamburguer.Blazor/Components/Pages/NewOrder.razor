@@ -1,0 +1,305 @@
+@page "/orders/new"
+@using System.Globalization
+@using GoodHamburguer.Blazor.Services.Api.Menu
+@using GoodHamburguer.Blazor.Services.Api.Orders
+@inject IMenuApiClient MenuApiClient
+@inject IOrderApiClient OrderApiClient
+
+<PageTitle>New Order | GoodHamburguer</PageTitle>
+
+<section class="order-page">
+    <header class="order-hero surface-panel">
+        <div>
+            <p class="order-kicker section-kicker">New Order</p>
+            <h1>Assemble a fresh order</h1>
+            <p class="section-summary">
+                Choose items from the live menu and send the order directly to the versioned GoodHamburguer API.
+            </p>
+        </div>
+        <div class="order-hero-note">
+            <span class="pill">Create flow</span>
+            <strong>Compose, send, confirm.</strong>
+            <p>Build a fresh ticket from the live menu and hand it straight to the kitchen queue.</p>
+        </div>
+    </header>
+
+    @if (isLoadingMenu)
+    {
+        <section class="order-state order-state-loading surface-panel">
+            <p>Loading menu options...</p>
+        </section>
+    }
+    else if (menuLoadErrorMessage is not null)
+    {
+        <section class="order-state order-state-error surface-panel">
+            <h2>Menu unavailable</h2>
+            <p>@menuLoadErrorMessage</p>
+            <button type="button" class="btn btn-outline-secondary" @onclick="LoadMenuAsync">
+                Try again
+            </button>
+        </section>
+    }
+    else if (createdOrder is not null)
+    {
+        <section class="order-success surface-panel">
+            <span class="pill">Order created</span>
+            <h2>Order created</h2>
+            <p class="order-success-id">@createdOrder.Id</p>
+            <dl class="order-summary data-grid">
+                <div class="data-card">
+                    <dt>Subtotal</dt>
+                    <dd>@createdOrder.Subtotal.ToString("0.00", CultureInfo.InvariantCulture)</dd>
+                </div>
+                <div class="data-card">
+                    <dt>Discount</dt>
+                    <dd>@createdOrder.Discount.ToString("0.00", CultureInfo.InvariantCulture)</dd>
+                </div>
+                <div class="data-card">
+                    <dt>Total</dt>
+                    <dd>@createdOrder.Total.ToString("0.00", CultureInfo.InvariantCulture)</dd>
+                </div>
+            </dl>
+            <div class="order-success-actions">
+                <a class="btn btn-outline-primary" href="/orders/@createdOrder.Id">View details</a>
+                <a class="btn btn-outline-secondary" href="/dashboard/orders">Open dashboard</a>
+            </div>
+        </section>
+    }
+    else
+    {
+        <div class="order-layout">
+            <EditForm Model="formModel" OnSubmit="HandleSubmitAsync" FormName="new-order" class="order-form surface-panel">
+                <div class="order-form-header">
+                    <div>
+                        <p class="section-kicker">Selection surface</p>
+                        <h2>Configure the order payload</h2>
+                    </div>
+                    <span class="pill">POST /api/v1/orders</span>
+                </div>
+
+                <div class="order-form-body">
+                    <div class="order-grid">
+                        <section class="order-panel">
+                            <label for="sandwich">Sandwich</label>
+                            <InputSelect id="sandwich" class="form-select" @bind-Value="formModel.SandwichItemCode">
+                                <option value="">No sandwich</option>
+                                @foreach (var item in GetItems("sandwiches"))
+                                {
+                                    <option value="@item.Code">@item.Name</option>
+                                }
+                            </InputSelect>
+                        </section>
+
+                        <section class="order-panel">
+                            <label for="side">Side</label>
+                            <InputSelect id="side" class="form-select" @bind-Value="formModel.SideItemCode">
+                                <option value="">No side</option>
+                                @foreach (var item in GetItems("sides"))
+                                {
+                                    <option value="@item.Code">@item.Name</option>
+                                }
+                            </InputSelect>
+                        </section>
+
+                        <section class="order-panel">
+                            <label for="drink">Drink</label>
+                            <InputSelect id="drink" class="form-select" @bind-Value="formModel.DrinkItemCode">
+                                <option value="">No drink</option>
+                                @foreach (var item in GetItems("drinks"))
+                                {
+                                    <option value="@item.Code">@item.Name</option>
+                                }
+                            </InputSelect>
+                        </section>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary order-submit" disabled="@isSubmitting">
+                    @(isSubmitting ? "Creating order..." : "Create order")
+                </button>
+            </EditForm>
+
+            <aside class="order-aside surface-panel">
+                <p class="section-kicker">Order preview</p>
+                <h2>Current selection</h2>
+                <dl class="order-preview-list data-grid compact">
+                    <div class="data-card">
+                        <dt>Sandwich</dt>
+                        <dd>@GetSelectionLabel("sandwiches", formModel.SandwichItemCode)</dd>
+                    </div>
+                    <div class="data-card">
+                        <dt>Side</dt>
+                        <dd>@GetSelectionLabel("sides", formModel.SideItemCode)</dd>
+                    </div>
+                    <div class="data-card">
+                        <dt>Drink</dt>
+                        <dd>@GetSelectionLabel("drinks", formModel.DrinkItemCode)</dd>
+                    </div>
+                </dl>
+
+                <div class="metric-grid">
+                    <article class="metric-card">
+                        <span>Sandwiches</span>
+                        <strong>@GetItems("sandwiches").Count</strong>
+                    </article>
+                    <article class="metric-card">
+                        <span>Sides</span>
+                        <strong>@GetItems("sides").Count</strong>
+                    </article>
+                    <article class="metric-card">
+                        <span>Drinks</span>
+                        <strong>@GetItems("drinks").Count</strong>
+                    </article>
+                </div>
+            </aside>
+        </div>
+    }
+</section>
+
+@if (errorModal is not null)
+{
+    <div class="error-modal-backdrop" role="presentation" @onclick="CloseErrorModal">
+        <section class="error-modal surface-panel" role="alertdialog" aria-modal="true" aria-labelledby="error-modal-title" @onclick:stopPropagation="true">
+            <div class="error-modal-header">
+                <div>
+                    <p class="section-kicker">Error state</p>
+                    <h2 id="error-modal-title">@errorModal.Title</h2>
+                </div>
+                <button type="button" class="error-modal-close" @onclick="CloseErrorModal" aria-label="Close error message">
+                    Close
+                </button>
+            </div>
+
+            <p>@errorModal.Message</p>
+
+            @if (errorModal.Details.Count > 0)
+            {
+                <ul class="order-errors">
+                    @foreach (var message in errorModal.Details)
+                    {
+                        <li>@message</li>
+                    }
+                </ul>
+            }
+
+            <div class="error-modal-actions">
+                @if (errorModal.ShowRetry)
+                {
+                    <button type="button" class="btn btn-outline-secondary" @onclick="RetryMenuLoadAsync">
+                        Try again
+                    </button>
+                }
+
+                <button type="button" class="btn btn-primary" @onclick="CloseErrorModal">
+                    Dismiss
+                </button>
+            </div>
+        </section>
+    </div>
+}
+
+@code {
+    private readonly OrderFormModel formModel = new();
+    private IReadOnlyList<MenuCategoryDto> categories = [];
+    private List<string> validationMessages = [];
+    private bool isLoadingMenu = true;
+    private bool isSubmitting;
+    private string? menuLoadErrorMessage;
+    private string? submitErrorMessage;
+    private OrderSummaryDto? createdOrder;
+    private ErrorModalState? errorModal;
+
+    protected override Task OnInitializedAsync() => LoadMenuAsync();
+
+    private async Task LoadMenuAsync()
+    {
+        menuLoadErrorMessage = null;
+        errorModal = null;
+        isLoadingMenu = true;
+
+        try
+        {
+            categories = await MenuApiClient.GetMenuAsync();
+        }
+        catch (Exception)
+        {
+            menuLoadErrorMessage = "We couldn't load the menu options right now. Please try again in a moment.";
+            ShowErrorModal("Menu unavailable", menuLoadErrorMessage, [], showRetry: true);
+        }
+        finally
+        {
+            isLoadingMenu = false;
+        }
+    }
+
+    private IReadOnlyList<MenuItemDto> GetItems(string categoryCode) =>
+        categories.FirstOrDefault(category => string.Equals(category.Code, categoryCode, StringComparison.OrdinalIgnoreCase))?.Items ?? [];
+
+    private string GetSelectionLabel(string categoryCode, string? selectedCode) =>
+        GetItems(categoryCode).FirstOrDefault(item => string.Equals(item.Code, selectedCode, StringComparison.OrdinalIgnoreCase))?.Name
+        ?? "Not selected";
+
+    private async Task HandleSubmitAsync(EditContext _)
+    {
+        submitErrorMessage = null;
+        validationMessages = [];
+        errorModal = null;
+        isSubmitting = true;
+
+        try
+        {
+            createdOrder = await OrderApiClient.CreateOrderAsync(new CreateOrderRequestDto
+            {
+                SandwichItemCode = Normalize(formModel.SandwichItemCode),
+                SideItemCode = Normalize(formModel.SideItemCode),
+                DrinkItemCode = Normalize(formModel.DrinkItemCode)
+            });
+        }
+        catch (OrderApiValidationException exception)
+        {
+            submitErrorMessage = exception.Message;
+            validationMessages = exception.Errors
+                .SelectMany(pair => pair.Value.Select(value => $"{pair.Key}: {value}"))
+                .ToList();
+            ShowErrorModal("We couldn't create the order", submitErrorMessage, validationMessages, showRetry: false);
+        }
+        catch (Exception)
+        {
+            submitErrorMessage = "We couldn't create the order right now. Please try again in a moment.";
+            ShowErrorModal("We couldn't create the order", submitErrorMessage, [], showRetry: false);
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private void CloseErrorModal() => errorModal = null;
+
+    private async Task RetryMenuLoadAsync()
+    {
+        CloseErrorModal();
+        await LoadMenuAsync();
+    }
+
+    private void ShowErrorModal(string title, string message, IReadOnlyList<string> details, bool showRetry) =>
+        errorModal = new ErrorModalState(title, message, details, showRetry);
+
+    private static string? Normalize(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
+
+    private sealed record ErrorModalState(
+        string Title,
+        string Message,
+        IReadOnlyList<string> Details,
+        bool ShowRetry);
+
+    private sealed class OrderFormModel
+    {
+        public string? SandwichItemCode { get; set; }
+
+        public string? SideItemCode { get; set; }
+
+        public string? DrinkItemCode { get; set; }
+    }
+}

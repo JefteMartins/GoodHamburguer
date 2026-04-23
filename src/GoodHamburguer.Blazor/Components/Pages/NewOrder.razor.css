@@ -1,0 +1,226 @@
+.order-page {
+    display: grid;
+    gap: 1.75rem;
+}
+
+.order-hero {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: minmax(0, 1.7fr) minmax(18rem, 0.95fr);
+    padding: 2rem;
+    background:
+        radial-gradient(circle at top left, rgba(255, 179, 176, 0.2), transparent 30%),
+        radial-gradient(circle at bottom right, rgba(254, 183, 0, 0.12), transparent 32%),
+        linear-gradient(135deg, rgba(30, 32, 32, 0.98), rgba(18, 20, 20, 0.98));
+}
+
+.order-hero-note {
+    display: grid;
+    align-content: end;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border: 1px solid rgba(170, 137, 135, 0.18);
+    border-radius: var(--radius-xl);
+    background: rgba(12, 15, 15, 0.72);
+}
+
+.order-hero h1 {
+    margin: 0.6rem 0 0.75rem;
+    font-size: clamp(2.3rem, 5vw, 4.1rem);
+}
+
+.order-hero-note strong {
+    font-family: "Space Grotesk", "Segoe UI", sans-serif;
+    font-size: 1.7rem;
+}
+
+.order-hero-note p {
+    margin: 0;
+    color: var(--color-on-surface-muted);
+    line-height: 1.6;
+}
+
+.order-layout {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1.55fr) minmax(18rem, 0.95fr);
+}
+
+.order-form,
+.order-success,
+.order-state,
+.order-aside {
+    padding: 1.5rem;
+}
+
+.order-form {
+    display: grid;
+    gap: 1.25rem;
+}
+
+.order-form-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.order-form-header h2,
+.order-aside h2,
+.order-success h2 {
+    margin: 0.45rem 0 0;
+}
+
+.order-form-body {
+    padding: 1.25rem;
+    border: 1px solid rgba(170, 137, 135, 0.16);
+    border-radius: var(--radius-xl);
+    background:
+        linear-gradient(180deg, rgba(51, 53, 53, 0.16), rgba(26, 28, 28, 0.82)),
+        rgba(18, 20, 20, 0.78);
+}
+
+.order-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.order-panel {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.order-panel label {
+    color: var(--color-on-surface-muted);
+    font-family: "Inter", "Segoe UI", sans-serif;
+    font-size: 0.76rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.order-submit {
+    justify-self: start;
+}
+
+.order-state-error {
+    margin-top: 1rem;
+    border-color: rgba(255, 180, 171, 0.28);
+    background:
+        radial-gradient(circle at top right, rgba(255, 180, 171, 0.16), transparent 32%),
+        linear-gradient(135deg, rgba(74, 16, 22, 0.82), rgba(30, 32, 32, 0.96));
+}
+
+.order-errors {
+    margin: 0.75rem 0 0;
+}
+
+.order-success {
+    display: grid;
+    gap: 1rem;
+}
+
+.order-success-id {
+    margin: 0;
+    font-family: Consolas, "Courier New", monospace;
+    color: var(--color-primary-soft);
+}
+
+.order-summary {
+    gap: 0.85rem;
+    margin: 0;
+}
+
+.order-summary div {
+    min-height: 100%;
+}
+
+.order-success-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.order-preview-list {
+    gap: 0.9rem;
+    margin: 1.25rem 0 1.5rem;
+}
+
+.order-preview-list div {
+    min-height: 100%;
+}
+
+.error-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    display: grid;
+    place-items: center;
+    padding: 1.5rem;
+    background: rgba(7, 9, 10, 0.72);
+    backdrop-filter: blur(12px);
+}
+
+.error-modal {
+    width: min(100%, 36rem);
+    padding: 1.5rem;
+    border-color: rgba(255, 180, 171, 0.3);
+    background:
+        radial-gradient(circle at top right, rgba(190, 30, 45, 0.18), transparent 34%),
+        linear-gradient(145deg, rgba(32, 35, 35, 0.98), rgba(16, 18, 18, 0.98));
+    box-shadow: 0 1.5rem 3rem rgba(0, 0, 0, 0.38);
+}
+
+.error-modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.error-modal-header h2 {
+    margin: 0.45rem 0 0;
+}
+
+.error-modal-close {
+    border: 0;
+    padding: 0.25rem 0;
+    background: transparent;
+    color: var(--color-on-surface-muted);
+    font: inherit;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.error-modal-close:hover,
+.error-modal-close:focus-visible {
+    color: var(--color-on-surface);
+}
+
+.error-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 880px) {
+    .order-hero,
+    .order-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .order-form-body {
+        padding: 1rem;
+    }
+
+    .error-modal-backdrop {
+        padding: 1rem;
+    }
+
+    .error-modal-header {
+        flex-direction: column;
+    }
+}

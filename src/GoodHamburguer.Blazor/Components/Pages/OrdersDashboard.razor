@@ -1,0 +1,132 @@
+@page "/dashboard/orders"
+@using System.Globalization
+@using GoodHamburguer.Blazor.Services.Api.Orders
+@inject IOrderApiClient OrderApiClient
+
+<PageTitle>Orders Dashboard | GoodHamburguer</PageTitle>
+
+<section class="orders-dashboard-page">
+    <header class="orders-dashboard-hero surface-panel">
+        <div>
+            <p class="orders-dashboard-kicker section-kicker">Orders dashboard</p>
+            <h1>Track active orders</h1>
+            <p class="section-summary">Review every order created through the live API and jump into the detailed order flow when you need to inspect or change an entry.</p>
+        </div>
+
+        <div class="orders-dashboard-spotlight">
+            <span class="pill">Operations board</span>
+            <strong>@orders.Count live entries</strong>
+            <p>Dark tonal surfaces, compact metrics, and quick access to detailed updates match the Stitch dashboard direction.</p>
+        </div>
+    </header>
+
+    <section class="metric-grid">
+        <article class="metric-card">
+            <span>Total orders</span>
+            <strong>@orders.Count</strong>
+        </article>
+        <article class="metric-card">
+            <span>Revenue total</span>
+            <strong>@RevenueTotal.ToString("0.00", CultureInfo.InvariantCulture)</strong>
+        </article>
+        <article class="metric-card">
+            <span>Average ticket</span>
+            <strong>@AverageTicket.ToString("0.00", CultureInfo.InvariantCulture)</strong>
+        </article>
+    </section>
+
+    @if (isLoading)
+    {
+        <section class="orders-dashboard-state surface-panel">
+            <p>Loading orders...</p>
+        </section>
+    }
+    else if (errorMessage is not null)
+    {
+        <section class="orders-dashboard-state orders-dashboard-state-error surface-panel">
+            <h2>Orders unavailable</h2>
+            <p>@errorMessage</p>
+            <button type="button" class="btn btn-outline-secondary" @onclick="LoadAsync">Try again</button>
+        </section>
+    }
+    else if (orders.Count == 0)
+    {
+        <section class="orders-dashboard-state surface-panel">
+            <h2>Nothing to review</h2>
+            <p>No orders have been created yet.</p>
+        </section>
+    }
+    else
+    {
+        <section class="orders-dashboard-list">
+            @foreach (var order in orders)
+            {
+                <article class="orders-dashboard-card">
+                    <header>
+                        <div>
+                            <span class="pill">Order ticket</span>
+                            <h2>@order.Id</h2>
+                        </div>
+                        <p>Updated @order.UpdatedAtUtc.ToString("u", CultureInfo.InvariantCulture)</p>
+                    </header>
+
+                    <dl class="orders-dashboard-summary data-grid">
+                        <div class="data-card">
+                            <dt>Sandwich</dt>
+                            <dd>@(order.SandwichItemCode ?? "None")</dd>
+                        </div>
+                        <div class="data-card">
+                            <dt>Side</dt>
+                            <dd>@(order.SideItemCode ?? "None")</dd>
+                        </div>
+                        <div class="data-card">
+                            <dt>Drink</dt>
+                            <dd>@(order.DrinkItemCode ?? "None")</dd>
+                        </div>
+                        <div class="data-card">
+                            <dt>Total</dt>
+                            <dd>@order.Total.ToString("0.00", CultureInfo.InvariantCulture)</dd>
+                        </div>
+                    </dl>
+
+                    <div class="orders-dashboard-actions">
+                        <a class="btn btn-outline-primary" href="/orders/@order.Id">View details</a>
+                    </div>
+                </article>
+            }
+        </section>
+    }
+</section>
+
+@code {
+    private IReadOnlyList<OrderSummaryDto> orders = [];
+    private bool isLoading = true;
+    private string? errorMessage;
+    private decimal RevenueTotal => orders.Sum(order => order.Total);
+    private decimal AverageTicket => orders.Count == 0 ? 0 : orders.Average(order => order.Total);
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            orders = await OrderApiClient.ListOrdersAsync();
+        }
+        catch (OrderApiProblemException exception)
+        {
+            errorMessage = exception.Message;
+        }
+        catch (Exception)
+        {
+            errorMessage = "We couldn't load the orders right now. Please try again in a moment.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
