@@ -238,6 +238,16 @@
         errorModal = null;
         isSubmitting = true;
 
+        if (string.IsNullOrWhiteSpace(formModel.SandwichItemCode) &&
+            string.IsNullOrWhiteSpace(formModel.SideItemCode) &&
+            string.IsNullOrWhiteSpace(formModel.DrinkItemCode))
+        {
+            submitErrorMessage = "Please select at least one item to create an order.";
+            ShowErrorModal("Empty order", submitErrorMessage, [], showRetry: false);
+            isSubmitting = false;
+            return;
+        }
+
         try
         {
             createdOrder = await OrderApiClient.CreateOrderAsync(new CreateOrderRequestDto

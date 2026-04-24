@@ -256,6 +256,15 @@
         validationMessages = [];
         isSubmitting = true;
 
+        if (string.IsNullOrWhiteSpace(formModel.SandwichItemCode) &&
+            string.IsNullOrWhiteSpace(formModel.SideItemCode) &&
+            string.IsNullOrWhiteSpace(formModel.DrinkItemCode))
+        {
+            errorMessage = "Please select at least one item to update the order.";
+            isSubmitting = false;
+            return;
+        }
+
         try
         {
             currentOrder = await OrderApiClient.UpdateOrderAsync(Id, new UpdateOrderRequestDto
