@@ -94,7 +94,15 @@ public class NewOrderPageTests : TestContext
             {
                 Code = "sandwiches",
                 DisplayName = "Sanduiches",
-                Items = []
+                Items =
+                [
+                    new MenuItemDto
+                    {
+                        Code = "sandwich-x-burger",
+                        Name = "X-Burger",
+                        Price = 12m
+                    }
+                ]
             }
         ])));
         Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient(_ =>
@@ -108,12 +116,32 @@ public class NewOrderPageTests : TestContext
         var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.NewOrder>();
 
         cut.WaitForAssertion(() => cut.Markup.Should().Contain("Create order"));
+        cut.Find("#sandwich").Change("sandwich-x-burger");
         cut.Find("form").Submit();
 
         cut.WaitForAssertion(() =>
         {
             cut.Markup.Should().Contain("We couldn't create the order");
             cut.Markup.Should().Contain("sandwichItemCode: The item code 'bad-item' was not found in the menu.");
+        });
+    }
+
+    [Fact]
+    public void NewOrder_ShowsEmptyOrderValidationError()
+    {
+        Services.AddSingleton<IMenuApiClient>(new StubMenuApiClient(() => Task.FromResult<IReadOnlyList<MenuCategoryDto>>([])));
+        Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient(_ => 
+            Task.FromException<OrderSummaryDto>(new InvalidOperationException("Should not be called"))));
+
+        var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.NewOrder>();
+
+        cut.WaitForAssertion(() => cut.Markup.Should().Contain("Create order"));
+        cut.Find("form").Submit();
+
+        cut.WaitForAssertion(() =>
+        {
+            cut.Markup.Should().Contain("Empty order");
+            cut.Markup.Should().Contain("Please select at least one item to create an order.");
         });
     }
 
@@ -143,7 +171,15 @@ public class NewOrderPageTests : TestContext
             {
                 Code = "sandwiches",
                 DisplayName = "Sanduiches",
-                Items = []
+                Items =
+                [
+                    new MenuItemDto
+                    {
+                        Code = "sandwich-x-burger",
+                        Name = "X-Burger",
+                        Price = 12m
+                    }
+                ]
             }
         ])));
         Services.AddSingleton<IOrderApiClient>(new StubOrderApiClient(_ =>
@@ -152,6 +188,7 @@ public class NewOrderPageTests : TestContext
         var cut = RenderComponent<GoodHamburguer.Blazor.Components.Pages.NewOrder>();
 
         cut.WaitForAssertion(() => cut.Markup.Should().Contain("Create order"));
+        cut.Find("#sandwich").Change("sandwich-x-burger");
         cut.Find("form").Submit();
 
         cut.WaitForAssertion(() =>
